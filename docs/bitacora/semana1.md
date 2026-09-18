@@ -1,0 +1,1 @@
+Aca va la bitacora de la semana 1 
