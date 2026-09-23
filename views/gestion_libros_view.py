@@ -1,160 +1,121 @@
 import tkinter as tk
-from tkinter import messagebox, ttk
-
+from tkinter import messagebox
 
 class GestionLibros(tk.Frame):
-
     def __init__(self, parent, controller):
         super().__init__(parent)
+        self.controller = controller
+
+        self.libros_datos = [
+            {"id": 1, "titulo": "Don Quijote", "autor": "Cervantes"},
+            {"id": 2, "titulo": "Cien años de soledad", "autor": "García Márquez"},
+            {"id": 3, "titulo": "El Principito", "autor": "Saint-Exupéry"},
+            {"id": 4, "titulo": "Ficciones", "autor": "Borges"},
+        ]
 
         self.rowconfigure(0, weight=0)
         self.rowconfigure(1, weight=1)
         self.columnconfigure(0, weight=1)
+        self.titulo_label = tk.Label(
+            self, 
+            text="Gestion de Libros", 
+            font=("Arial", 14, "bold"),
+            bd=1, 
+            relief="solid", 
+            pady=8
+        )
+        self.titulo_label.grid(row=0, column=0, sticky="ew", padx=10, pady=(10, 5))
 
-        tk.Label(
-            self, text="Pantalla Gestión Libros", font=("Arial", 14, "bold")
-        ).grid(row=0, column=0, sticky="new", pady=12)
-
-        # ?--- Frame Central
-        self.frame_central = tk.Frame(self, padx=20, pady=5)
-        self.frame_central.grid(row=1, sticky="nsew")
-
-        self.frame_central.columnconfigure(0, weight=4)
+        self.frame_central = tk.Frame(self, bd=1, relief="solid", padx=15, pady=15)
+        self.frame_central.grid(row=1, column=0, sticky="nsew", padx=10, pady=(5, 10))
+        
+        self.frame_central.columnconfigure(0, weight=1)
         self.frame_central.columnconfigure(1, weight=1)
-        self.frame_central.rowconfigure(0, weight=0)
-        self.frame_central.rowconfigure(1, weight=0)
         self.frame_central.rowconfigure(2, weight=1)
-        self.frame_central.rowconfigure(3, weight=0)
 
-        #? --- Buscar
-        self.busqueda = tk.Entry(self.frame_central)
-        self.busqueda.grid(
-            row=0, column=0, sticky="ew", padx=(0, 10), pady=3
+        self.busqueda = tk.Entry(self.frame_central, justify="center")
+        self.busqueda.insert(0, "barra de busqueda")
+        self.busqueda.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 15), ipady=5)
+        
+        self.busqueda.bind("<FocusIn>", lambda e: self.busqueda.delete(0, tk.END) if self.busqueda.get() == "barra de busqueda" else None)
+        self.busqueda.bind("<Return>", lambda e: self.buscar())
+
+        self.btn_ordenar = tk.Button(self.frame_central, text="Ordenar", command=self.ordenar)
+        self.btn_ordenar.grid(row=1, column=0, sticky="w", pady=(0, 15), ipadx=10)
+
+        self.btn_filtros = tk.Button(self.frame_central, text="Filtros", command=self.filtrar)
+        self.btn_filtros.grid(row=1, column=1, sticky="e", pady=(0, 15), ipadx=10)
+
+
+        self.frame_libros = tk.Frame(self.frame_central)
+        self.frame_libros.grid(row=2, column=0, columnspan=2, sticky="nsew", pady=10)
+        
+        self.renderizar_libros(self.libros_datos)
+
+        self.btn_crear = tk.Button(
+            self.frame_central, 
+            text="Crear Libro", 
+            command=self.modificar_libro
         )
-
-        self.boton = tk.Button(
-            self.frame_central, text="Buscar", command=self.buscar
+        self.btn_atras = tk.Button(
+            self.frame_central, 
+            text="Volver atras", 
+            command=self.volver_atras
         )
-        self.boton.grid(row=0, column=1, sticky="ew", padx=5, pady=3)
+        self.btn_crear.grid(row=3, column=0, columnspan=1, sticky="ew", pady=(15, 0), ipady=5)
+        self.btn_atras.grid(row=3, column=1, columnspan=1, sticky="ew", pady=(15, 0), ipady=5)
 
-        self.busqueda.bind("<Return>", lambda event: self.buscar())
+    def renderizar_libros(self, lista_libros):
+        for widget in self.frame_libros.winfo_children():
+            widget.destroy()
 
-        #? --- Filtros y Ordnar
-        self.botones_filtros_frame = tk.Frame(self.frame_central)
-        self.botones_filtros_frame.grid(
-            row=1, column=0, columnspan=2, sticky="nsew", pady=5
-        )
-        self.botones_filtros_frame.columnconfigure(0, weight=1)
-        self.botones_filtros_frame.columnconfigure(1, weight=1)
+        for idx, libro in enumerate(lista_libros):
+            col = idx % 4 #? Lo que hace esto es calcular la columna a la que debe ir mediante el modulo
+            self.frame_libros.columnconfigure(col, weight=1)
 
-        self.boton_ordenar = tk.Button(
-            self.botones_filtros_frame, text="Ordenar A-Z", command=self.ordenar
-        )
-        self.boton_ordenar.grid(row=0, column=0, sticky="w")
+            sub_frame = tk.Frame(self.frame_libros)
+            sub_frame.grid(row=0, column=col, padx=5, pady=5, sticky="nsew")
 
-        self.boton_filtrar = tk.Button(
-            self.botones_filtros_frame,
-            text="Limpiar Filtro",
-            command=self.limpiar_busqueda,
-        )
-        self.boton_filtrar.grid(row=0, column=1, sticky="e")
+            lbl_libro = tk.Label(
+                sub_frame, 
+                text=f"Libro\n{libro['titulo']}", 
+                bd=1,
+                height=4,
+                wraplength=100
+            )
+            lbl_libro.pack(fill="x", pady=(0, 5))
 
-        #? --- Tabla de Libros 
-        self.frame_tabla = tk.Frame(self.frame_central)
-        self.frame_tabla.grid(
-            row=2, column=0, columnspan=2, sticky="nsew", pady=10
-        )
-        self.frame_tabla.rowconfigure(0, weight=1)
-        self.frame_tabla.columnconfigure(0, weight=1)
+            btn_mod = tk.Button(
+                sub_frame, 
+                text="Modificar", 
+                command=lambda l=libro: self.modificar_libro(l)
+            )
+            btn_mod.pack(fill="x")
 
-        columnas = ("id", "titulo", "autor", "genero")
-        self.tabla = ttk.Treeview(
-            self.frame_tabla, columns=columnas, show="headings"
-        )
-
-        self.tabla.heading("id", text="ID")
-        self.tabla.heading("titulo", text="Título")
-        self.tabla.heading("autor", text="Autor")
-        self.tabla.heading("genero", text="Género")
-
-        self.tabla.column("id", width=40, anchor="center")
-        self.tabla.column("titulo", width=180)
-        self.tabla.column("autor", width=140)
-        self.tabla.column("genero", width=100)
-
-        scrollbar = ttk.Scrollbar(
-            self.frame_tabla, orient="vertical", command=self.tabla.yview
-        )
-        self.tabla.configure(yscroll=scrollbar.set)
-
-        self.tabla.grid(row=0, column=0, sticky="nsew")
-        scrollbar.grid(row=0, column=1, sticky="ns")
-
-        # --- Botones de Acción (Inferiores)
-        self.frame_acciones = tk.Frame(self.frame_central)
-        self.frame_acciones.grid(
-            row=3, column=0, columnspan=2, sticky="ew", pady=5
-        )
-
-        self.btn_eliminar = tk.Button(
-            self.frame_acciones,
-            text="Eliminar Seleccionado",
-            command=self.eliminar_libro,
-        )
-        self.btn_eliminar.pack(side="right", padx=5)
-
-        #! Ejemplo de datos
-        self.libros_datos = [
-            (1, "Don Quijote de la Mancha", "Miguel de Cervantes", "Novela"),
-            (2, "Cien años de soledad", "Gabriel García Márquez", "Realismo Mágico"),
-            (3, "El Principito", "Antoine de Saint-Exupéry", "Fábula"),
-        ]
-        self.actualizar_tabla(self.libros_datos)
-
-    def actualizar_tabla(self, lista_libros):
-        """Limpia y vuelve a cargar los datos en la tabla."""
-        for item in self.tabla.get_children():
-            self.tabla.delete(item)
-        for libro in lista_libros:
-            self.tabla.insert("", "end", values=libro)
-
-    def buscar(self, event=None):
-        """Filtra la lista de libros según lo ingresado."""
+    def buscar(self):
         texto = self.busqueda.get().strip().lower()
-        if not texto:
-            self.actualizar_tabla(self.libros_datos)
+        if not texto or texto == "barra de busqueda":
+            self.renderizar_libros(self.libros_datos)
             return
 
         resultados = [
-            libro
-            for libro in self.libros_datos
-            if texto in libro[1].lower() or texto in libro[2].lower()
+            l for l in self.libros_datos if texto in l["titulo"].lower() or texto in l["autor"].lower()
         ]
-        self.actualizar_tabla(resultados)
-
-    def limpiar_busqueda(self):
-        """Restablece la búsqueda y muestra todos los datos."""
-        self.busqueda.delete(0, tk.END)
-        self.actualizar_tabla(self.libros_datos)
+        self.renderizar_libros(resultados)
 
     def ordenar(self):
-        """Ordena los libros alfabéticamente por título."""
-        libros_ordenados = sorted(self.libros_datos, key=lambda x: x[1])
-        self.actualizar_tabla(libros_ordenados)
+        libros_ordenados = sorted(self.libros_datos, key=lambda x: x["titulo"])
+        self.renderizar_libros(libros_ordenados)
 
-    def eliminar_libro(self):
-        """Elimina la fila seleccionada en la tabla."""
-        seleccion = self.tabla.selection()
-        if not seleccion:
-            messagebox.showwarning(
-                "Atención", "Por favor, selecciona un libro de la lista."
-            )
-            return
+    def filtrar(self):
+        self.busqueda.delete(0, tk.END)
+        self.renderizar_libros(self.libros_datos)
 
-        item = self.tabla.item(seleccion)
-        libro_id = item["values"][0]
+    def modificar_libro(self, libro=None):
+        from views.modificar_libro_view import ModificarLibro
+        self.controller.show_frame(ModificarLibro)
 
-        self.libros_datos = [
-            libro for libro in self.libros_datos if libro[0] != libro_id
-        ]
-        self.actualizar_tabla(self.libros_datos)
+        
+    def volver_atras(self):
+        from views.home_view import HomeView
+        self.controller.show_frame(HomeView)

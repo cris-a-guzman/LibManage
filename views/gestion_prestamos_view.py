@@ -110,8 +110,13 @@ class GestionPrestamos(tk.Frame):
             fg="red",
             command=self.registrar_prestamo,
         )
-        self.btn_registrar.grid(row=4, column=0, columnspan=2, sticky="ew", pady=(10, 0), ipady=6)
-
+        self.btn_atras = tk.Button(
+            self.frame_central, 
+            text="Volver atras", 
+            command=self.volver_atras
+        )
+        self.btn_registrar.grid(row=4, column=0, columnspan=1, sticky="ew", pady=(10, 0), ipady=6)
+        self.btn_atras.grid(row=4, column=1, columnspan=1, sticky="ew", pady=(15, 0), ipady=5)
         #! Ejemplo de datos
         self.prestamos_datos = [
             (1, "Juan Perez", "1984", "12/09"),
@@ -153,7 +158,7 @@ class GestionPrestamos(tk.Frame):
         """Elimina de la lista el prestamo seleccionado (ya devuelto)."""
         seleccion = self.tabla.selection()
         if not seleccion:
-            messagebox.showwarning(
+            tk.messagebox.showwarning(
                 "Atención", "Por favor, selecciona un préstamo de la lista."
             )
             return
@@ -169,3 +174,7 @@ class GestionPrestamos(tk.Frame):
     def registrar_prestamo(self):
         from views.registrar_prestamo_view import RegistrarPrestamo
         self.controller.show_frame(RegistrarPrestamo)
+        
+    def volver_atras(self): #! Esto lo podriamos pasar a controller me parece
+        from views.home_view import HomeView
+        self.controller.show_frame(HomeView)

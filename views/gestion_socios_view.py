@@ -72,7 +72,6 @@ class GestionSocios(tk.Frame):
         self.btn_volver_atras.grid(row=3, column=1, columnspan=1, sticky="ew", pady=(15, 0), ipady=5)
 
     def renderizar_socios(self):
-        """Genera dinámicamente los bloques de 'Socio' y su botón 'Modificar'[cite: 1]"""
         # Limpiar widgets previos
         for widget in self.frame_socios.winfo_children():
             widget.destroy()
@@ -99,7 +98,7 @@ class GestionSocios(tk.Frame):
             btn_mod = tk.Button(
                 sub_frame, 
                 text="Modificar", 
-                command=lambda s=socio: self.modificar_socio(s)
+                command=lambda s=socio: self.agregar_socio(s)
             )
             btn_mod.pack(fill="x")
 
@@ -109,11 +108,11 @@ class GestionSocios(tk.Frame):
     def filtrar(self):
         print("Filtrando socios...")
 
-    def modificar_socio(self, socio):
-        print(f"Modificando socio: {socio['nombre']}")
 
-    def agregar_socio(self):
-        print("Abriendo formulario para agregar un nuevo socio...")
+    def agregar_socio(self, socio=None):
+        from views.registrar_socio_view import RegistrarSocio
+        self.controller.show_frame(RegistrarSocio)
+        # Una vez con la conexion a la db debemos resolver lo de pasar Socio
         
     def volver_atras(self):
         from views.home_view import HomeView
