@@ -25,7 +25,7 @@ class MainWindow(tk.Tk):
             print(widget)
             widget.destroy()
         
-        if datos:
+        if datos is not None:
             frame = frame_class(self.container, self, datos)
             frame.pack(fill="both", expand=True)
         else:
