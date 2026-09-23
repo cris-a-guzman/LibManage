@@ -1,6 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
 from views.gestion_libros_view import GestionLibros
+from views.gestion_prestamos_view import GestionPrestamos
+from views.gestion_socios_view import GestionSocios
+
 
 class HomeView(tk.Frame):
 
@@ -38,14 +41,16 @@ class HomeView(tk.Frame):
             self.inicio,
             text="🔄 Gestión de Préstamos",
             style="Dashboard.TButton",
-            padding=(20,15)
+            padding=(20,15),
+            command=lambda: controller.show_frame(GestionPrestamos)
         ).grid(row=0, column=1, padx=15, pady=10, sticky="ew")
         
         ttk.Button(
             self.inicio,
             text="👥 Gestión de Socios",
             style="Dashboard.TButton",
-            padding=(20,15)
+            padding=(20,15),
+            command=lambda: controller.show_frame(GestionSocios)
         ).grid(row=0, column=2, padx=15, pady=10, sticky="ew")
         
         self.rowconfigure(2, weight=1)

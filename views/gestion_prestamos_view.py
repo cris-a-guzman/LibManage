@@ -1,18 +1,18 @@
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import ttk
 
-
-class GestionLibros(tk.Frame):
+class GestionPrestamos(tk.Frame):
 
     def __init__(self, parent, controller):
         super().__init__(parent)
+        self.controller = controller
 
         self.rowconfigure(0, weight=0)
         self.rowconfigure(1, weight=1)
         self.columnconfigure(0, weight=1)
 
         tk.Label(
-            self, text="Pantalla Gestión Libros", font=("Arial", 14, "bold")
+            self, text="Gestion de Prestamos", font=("Arial", 14, "bold")
         ).grid(row=0, column=0, sticky="new", pady=12)
 
         # ?--- Frame Central
@@ -39,7 +39,7 @@ class GestionLibros(tk.Frame):
 
         self.busqueda.bind("<Return>", lambda event: self.buscar())
 
-        #? --- Filtros y Ordnar
+        #? --- Filtros y Ordenar
         self.botones_filtros_frame = tk.Frame(self.frame_central)
         self.botones_filtros_frame.grid(
             row=1, column=0, columnspan=2, sticky="nsew", pady=5
@@ -48,18 +48,18 @@ class GestionLibros(tk.Frame):
         self.botones_filtros_frame.columnconfigure(1, weight=1)
 
         self.boton_ordenar = tk.Button(
-            self.botones_filtros_frame, text="Ordenar A-Z", command=self.ordenar
+            self.botones_filtros_frame, text="Ordenar", command=self.ordenar
         )
         self.boton_ordenar.grid(row=0, column=0, sticky="w")
 
         self.boton_filtrar = tk.Button(
             self.botones_filtros_frame,
-            text="Limpiar Filtro",
+            text="Filtros",
             command=self.limpiar_busqueda,
         )
         self.boton_filtrar.grid(row=0, column=1, sticky="e")
 
-        #? --- Tabla de Libros 
+        #? --- Tabla de Prestamos
         self.frame_tabla = tk.Frame(self.frame_central)
         self.frame_tabla.grid(
             row=2, column=0, columnspan=2, sticky="nsew", pady=10
@@ -67,20 +67,20 @@ class GestionLibros(tk.Frame):
         self.frame_tabla.rowconfigure(0, weight=1)
         self.frame_tabla.columnconfigure(0, weight=1)
 
-        columnas = ("id", "titulo", "autor", "genero")
+        columnas = ("id", "socio", "libro", "vence")
         self.tabla = ttk.Treeview(
             self.frame_tabla, columns=columnas, show="headings"
         )
 
         self.tabla.heading("id", text="ID")
-        self.tabla.heading("titulo", text="Título")
-        self.tabla.heading("autor", text="Autor")
-        self.tabla.heading("genero", text="Género")
+        self.tabla.heading("socio", text="Socio")
+        self.tabla.heading("libro", text="Libro")
+        self.tabla.heading("vence", text="Vence")
 
         self.tabla.column("id", width=40, anchor="center")
-        self.tabla.column("titulo", width=180)
-        self.tabla.column("autor", width=140)
-        self.tabla.column("genero", width=100)
+        self.tabla.column("socio", width=140)
+        self.tabla.column("libro", width=140)
+        self.tabla.column("vence", width=80, anchor="center")
 
         scrollbar = ttk.Scrollbar(
             self.frame_tabla, orient="vertical", command=self.tabla.yview
@@ -95,66 +95,77 @@ class GestionLibros(tk.Frame):
         self.frame_acciones.grid(
             row=3, column=0, columnspan=2, sticky="ew", pady=5
         )
+        self.frame_acciones.columnconfigure(0, weight=1)
 
-        self.btn_eliminar = tk.Button(
+        self.btn_devolver = tk.Button(
             self.frame_acciones,
-            text="Eliminar Seleccionado",
-            command=self.eliminar_libro,
+            text="devolver",
+            command=self.marcar_devuelto,
         )
-        self.btn_eliminar.pack(side="right", padx=5)
+        self.btn_devolver.pack(side="right", padx=5)
+
+        self.btn_registrar = tk.Button(
+            self.frame_central,
+            text="Registrar Prestamo",
+            fg="red",
+            command=self.registrar_prestamo,
+        )
+        self.btn_registrar.grid(row=4, column=0, columnspan=2, sticky="ew", pady=(10, 0), ipady=6)
 
         #! Ejemplo de datos
-        self.libros_datos = [
-            (1, "Don Quijote de la Mancha", "Miguel de Cervantes", "Novela"),
-            (2, "Cien años de soledad", "Gabriel García Márquez", "Realismo Mágico"),
-            (3, "El Principito", "Antoine de Saint-Exupéry", "Fábula"),
+        self.prestamos_datos = [
+            (1, "Juan Perez", "1984", "12/09"),
+            (2, "Lucia Diaz", "Rayuela", "02/09"),
         ]
-        self.actualizar_tabla(self.libros_datos)
+        self.actualizar_tabla(self.prestamos_datos)
 
-    def actualizar_tabla(self, lista_libros):
+    def actualizar_tabla(self, lista_prestamos):
         """Limpia y vuelve a cargar los datos en la tabla."""
         for item in self.tabla.get_children():
             self.tabla.delete(item)
-        for libro in lista_libros:
-            self.tabla.insert("", "end", values=libro)
+        for prestamo in lista_prestamos:
+            self.tabla.insert("", "end", values=prestamo)
 
     def buscar(self, event=None):
-        """Filtra la lista de libros según lo ingresado."""
+        """Filtra la lista de prestamos según lo ingresado."""
         texto = self.busqueda.get().strip().lower()
         if not texto:
-            self.actualizar_tabla(self.libros_datos)
+            self.actualizar_tabla(self.prestamos_datos)
             return
 
         resultados = [
-            libro
-            for libro in self.libros_datos
-            if texto in libro[1].lower() or texto in libro[2].lower()
+            p for p in self.prestamos_datos
+            if texto in p[1].lower() or texto in p[2].lower()
         ]
         self.actualizar_tabla(resultados)
 
     def limpiar_busqueda(self):
         """Restablece la búsqueda y muestra todos los datos."""
         self.busqueda.delete(0, tk.END)
-        self.actualizar_tabla(self.libros_datos)
+        self.actualizar_tabla(self.prestamos_datos)
 
     def ordenar(self):
-        """Ordena los libros alfabéticamente por título."""
-        libros_ordenados = sorted(self.libros_datos, key=lambda x: x[1])
-        self.actualizar_tabla(libros_ordenados)
+        """Ordena los prestamos por fecha de vencimiento."""
+        prestamos_ordenados = sorted(self.prestamos_datos, key=lambda x: x[3])
+        self.actualizar_tabla(prestamos_ordenados)
 
-    def eliminar_libro(self):
-        """Elimina la fila seleccionada en la tabla."""
+    def marcar_devuelto(self):
+        """Elimina de la lista el prestamo seleccionado (ya devuelto)."""
         seleccion = self.tabla.selection()
         if not seleccion:
             messagebox.showwarning(
-                "Atención", "Por favor, selecciona un libro de la lista."
+                "Atención", "Por favor, selecciona un préstamo de la lista."
             )
             return
 
         item = self.tabla.item(seleccion)
-        libro_id = item["values"][0]
+        prestamo_id = item["values"][0]
 
-        self.libros_datos = [
-            libro for libro in self.libros_datos if libro[0] != libro_id
+        self.prestamos_datos = [
+            p for p in self.prestamos_datos if p[0] != prestamo_id
         ]
-        self.actualizar_tabla(self.libros_datos)
+        self.actualizar_tabla(self.prestamos_datos)
+
+    def registrar_prestamo(self):
+        from views.registrar_prestamo_view import RegistrarPrestamo
+        self.controller.show_frame(RegistrarPrestamo)
