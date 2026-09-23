@@ -100,7 +100,13 @@ class GestionSocios(tk.Frame):
                 text="Modificar", 
                 command=lambda s=socio: self.agregar_socio(s)
             )
+            brn_prestamos = tk.Button(
+                sub_frame, 
+                text="Ver Prestamos", 
+                command=lambda s=socio: self.ver_prestamos(s)
+            )
             btn_mod.pack(fill="x")
+            brn_prestamos.pack(fill="x")
 
     def ordenar(self):
         print("Ordenando socios...")
@@ -111,9 +117,13 @@ class GestionSocios(tk.Frame):
 
     def agregar_socio(self, socio=None):
         from views.registrar_socio_view import RegistrarSocio
-        self.controller.show_frame(RegistrarSocio)
+        self.controller.show_frame(RegistrarSocio, socio)
         # Una vez con la conexion a la db debemos resolver lo de pasar Socio
         
     def volver_atras(self):
         from views.home_view import HomeView
         self.controller.show_frame(HomeView)
+    
+    def ver_prestamos(self, datos):
+        from views.prestamos_socio_view import VistaPrestamosSocio
+        self.controller.show_frame(VistaPrestamosSocio, datos)

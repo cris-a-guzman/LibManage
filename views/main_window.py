@@ -19,14 +19,18 @@ class MainWindow(tk.Tk):
         
         self.show_frame(login_view)
         
-    def show_frame(self, frame_class):
+    def show_frame(self, frame_class, datos=None):
         
         for widget in self.container.winfo_children():
             print(widget)
             widget.destroy()
-            
-        frame = frame_class(self.container, self)
-        frame.pack(fill="both", expand=True)
+        
+        if datos:
+            frame = frame_class(self.container, self, datos)
+            frame.pack(fill="both", expand=True)
+        else:
+            frame = frame_class(self.container, self)
+            frame.pack(fill="both", expand=True)
         
     def _crear_header(self):
         

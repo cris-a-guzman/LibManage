@@ -37,12 +37,13 @@ class RegistrarSocio(tk.Frame):
         self.txt_autor = self.crear_campo("DNI", 1)
         self.txt_anio = self.crear_campo("Telefono", 2)
         self.txt_cantidad = self.crear_campo("Fecha de Asociacion", 3)
-        self.btn_ver_prestamos = tk.Button(self.frame_formulario,
-            text="Ver prestamos del socio", command=self.ver_prestamos
-        )
-        # self.btn_ver_prestamos.insert(0)
-        self.btn_ver_prestamos.grid(row=4, column=0, pady=8, ipady=6)
+
         # Ver prestamos del socio. boton
+        if self.socio_datos:
+            self.btn_ver_prestamos = tk.Button(self.frame_formulario,
+                text="Ver prestamos del socio", command=self.ver_prestamos
+            )
+            self.btn_ver_prestamos.grid(row=4, column=0, pady=8, ipady=6)
 
         #?Se cargan los datos si existen
         self.cargar_datos()
@@ -104,6 +105,6 @@ class RegistrarSocio(tk.Frame):
             messagebox.showinfo(title="Socio eliminado", message="Socio eliminado exitosamente.")
             
     def ver_prestamos(self):
-        pass
-        #aca va el controler a la pantalla de prestamos del socio
+        from views.prestamos_socio_view import VistaPrestamosSocio
+        self.controller.show_frame(VistaPrestamosSocio)
             
