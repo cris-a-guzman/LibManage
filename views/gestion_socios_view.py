@@ -1,9 +1,10 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+from views.components.base_frame import BaseFrame
 
-class GestionSocios(tk.Frame):
+class GestionSocios(BaseFrame):
     def __init__(self, parent, controller):
-        super().__init__(parent)
+        super().__init__(parent, controller)
         self.controller = controller
 
         #! Datos de ejemplo para los socios
@@ -14,41 +15,23 @@ class GestionSocios(tk.Frame):
             {"id": 4, "nombre": "Socio 4"},
         ]
 
-        # Configuración del grid principal de la pantalla
-        self.rowconfigure(0, weight=0) # Título
-        self.rowconfigure(1, weight=1) # Contenido principal
-        self.columnconfigure(0, weight=1)
-
-        #?
-        self.titulo_label = tk.Label(
-            self, 
-            text="Gestion Socios", 
-            font=("Arial", 14, "bold"),
-            bd=1,
-            pady=8
-        )
-        self.titulo_label.grid(row=0, column=0, sticky="ew", padx=10, pady=(10, 5))
-
-        #Framce Central
-        self.frame_central = tk.Frame(self, bd=1, relief="solid")
-        self.frame_central.grid(row=1, column=0, sticky="nsew", padx=10, pady=(5, 10))
-        
-        self.frame_central.columnconfigure(0, weight=1)
+        #? Frame Central
+        self.frame_central = self.crear_frame_central()
+        self.frame_central.columnconfigure(0, weight=1) #? Esto tambien se podria refactorizar
         self.frame_central.columnconfigure(1, weight=1)
-
-        #Barra de busqueda
-        self.busqueda = tk.Entry(self.frame_central, justify="center")
-        self.busqueda.insert(0, "Barra de Busqueda")
-        self.busqueda.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 15), ipady=5)
         
-        self.busqueda.bind("<FocusIn>", lambda e: self.busqueda.delete(0, tk.END) if self.busqueda.get() == "Barra de Busqueda" else None)
+        #? Titulo
+        self.crear_titulo("Gestion de Socios")
+        
 
-        #Botones
-        self.btn_ordenar = tk.Button(self.frame_central, text="Ordenar", command=self.ordenar)
-        self.btn_ordenar.grid(row=1, column=0, sticky="w", pady=(0, 15), ipadx=10)
+        #? Barra de busqueda
+        self.crear_barra_busqueda("Buscar Socio", self.buscar_socio)
+        
+        #? Boton Ordenar
+        self.crear_boton_ordenar(self.ordenar)
 
-        self.btn_filtros = tk.Button(self.frame_central, text="Filtros", command=self.filtrar)
-        self.btn_filtros.grid(row=1, column=1, sticky="e", pady=(0, 15), ipadx=10)
+        #? Boton Filtrar
+        self.crear_boton_filtrar(self.filtrar)
 
         #Socios
         self.frame_socios = tk.Frame(self.frame_central)
@@ -56,21 +39,16 @@ class GestionSocios(tk.Frame):
         
         self.renderizar_socios()
 
-        # Agregar Socios
-        self.btn_agregar = tk.Button(
-            self.frame_central, 
-            text="Agregar Socio", 
-            command=self.agregar_socio
-        )
+        #? Boton Crear (Agregar socio)
+        self.crear_boton_crear("Agregar Socio", self.agregar_socio)
         
-        self.btn_volver_atras = tk.Button(
-            self.frame_central, 
-            text="Volver Atras", 
-            command=self.volver_atras
-        )
-        self.btn_agregar.grid(row=3, column=0, columnspan=1, sticky="ew", pady=(15, 0), ipady=5)
-        self.btn_volver_atras.grid(row=3, column=1, columnspan=1, sticky="ew", pady=(15, 0), ipady=5)
+        #? Boton Volver
+        self.crear_boton_volver(self.volver_atras)
 
+    def buscar_socio(self):
+        pass
+        # Se va a implementar luego
+    
     def renderizar_socios(self):
         # Limpiar widgets previos
         for widget in self.frame_socios.winfo_children():

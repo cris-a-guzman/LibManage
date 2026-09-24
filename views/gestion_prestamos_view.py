@@ -1,43 +1,35 @@
 import tkinter as tk
 from tkinter import ttk
+from views.components.base_frame import BaseFrame
 
-class GestionPrestamos(tk.Frame):
+class GestionPrestamos(BaseFrame):
 
     def __init__(self, parent, controller):
-        super().__init__(parent)
-        self.controller = controller
+        super().__init__(parent, controller)
+        self.controller = controller      
 
-        self.rowconfigure(0, weight=0)
-        self.rowconfigure(1, weight=1)
-        self.columnconfigure(0, weight=1)
-
-        tk.Label(
-            self, text="Gestion de Prestamos", font=("Arial", 14, "bold")
-        ).grid(row=0, column=0, sticky="new", pady=12)
 
         # ?--- Frame Central
-        self.frame_central = tk.Frame(self, padx=20, pady=5)
-        self.frame_central.grid(row=1, sticky="nsew")
+        self.frame_central = self.crear_frame_central()
 
+        
+        #? -- TItulo
+        self.crear_titulo("Gestion de Prestamos")
+        
         self.frame_central.columnconfigure(0, weight=4)
         self.frame_central.columnconfigure(1, weight=1)
         self.frame_central.rowconfigure(0, weight=0)
-        self.frame_central.rowconfigure(1, weight=0)
+        self.frame_central.rowconfigure(1, weight=0) #? Esto tambien se podria refactorizar
         self.frame_central.rowconfigure(2, weight=1)
         self.frame_central.rowconfigure(3, weight=0)
 
-        #? --- Buscar
-        self.busqueda = tk.Entry(self.frame_central)
-        self.busqueda.grid(
-            row=0, column=0, sticky="ew", padx=(0, 10), pady=3
-        )
+        #? --- Barra de busqueda
+        self.crear_barra_busqueda("Buscar Prestamo", self.buscar)
 
         self.boton = tk.Button(
             self.frame_central, text="Buscar", command=self.buscar
         )
         self.boton.grid(row=0, column=1, sticky="ew", padx=5, pady=3)
-
-        self.busqueda.bind("<Return>", lambda event: self.buscar())
 
         #? --- Filtros y Ordenar
         self.botones_filtros_frame = tk.Frame(self.frame_central)
@@ -47,17 +39,11 @@ class GestionPrestamos(tk.Frame):
         self.botones_filtros_frame.columnconfigure(0, weight=1)
         self.botones_filtros_frame.columnconfigure(1, weight=1)
 
-        self.boton_ordenar = tk.Button(
-            self.botones_filtros_frame, text="Ordenar", command=self.ordenar
-        )
-        self.boton_ordenar.grid(row=0, column=0, sticky="w")
+        #? Boton Ordenar
+        self.crear_boton_ordenar(self.ordenar)
 
-        self.boton_filtrar = tk.Button(
-            self.botones_filtros_frame,
-            text="Filtros",
-            command=self.limpiar_busqueda,
-        )
-        self.boton_filtrar.grid(row=0, column=1, sticky="e")
+        #? Boton Filtrar
+        self.crear_boton_filtrar(self.filtrar)
 
         #? --- Tabla de Prestamos
         self.frame_tabla = tk.Frame(self.frame_central)
@@ -104,25 +90,21 @@ class GestionPrestamos(tk.Frame):
         )
         self.btn_devolver.pack(side="right", padx=5)
 
-        self.btn_registrar = tk.Button(
-            self.frame_central,
-            text="Registrar Prestamo",
-            fg="red",
-            command=self.registrar_prestamo,
-        )
-        self.btn_atras = tk.Button(
-            self.frame_central, 
-            text="Volver atras", 
-            command=self.volver_atras
-        )
-        self.btn_registrar.grid(row=4, column=0, columnspan=1, sticky="ew", pady=(10, 0), ipady=6)
-        self.btn_atras.grid(row=4, column=1, columnspan=1, sticky="ew", pady=(15, 0), ipady=5)
+        #? Boton Crear (Registrar prestamo)
+        self.crear_boton_crear("Registrar Prestamo", self.registrar_prestamo)
+        
+        #? Boton Volver Atras
+        self.crear_boton_volver(self.volver_atras)
+        
         #! Ejemplo de datos
         self.prestamos_datos = [
             (1, "Juan Perez", "1984", "12/09"),
             (2, "Lucia Diaz", "Rayuela", "02/09"),
         ]
         self.actualizar_tabla(self.prestamos_datos)
+
+    def filtrar(self):
+        print("Filtrando")
 
     def actualizar_tabla(self, lista_prestamos):
         """Limpia y vuelve a cargar los datos en la tabla."""
