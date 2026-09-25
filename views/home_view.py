@@ -3,94 +3,116 @@ from tkinter import ttk
 from views.gestion_libros_view import GestionLibros
 from views.gestion_prestamos_view import GestionPrestamos
 from views.gestion_socios_view import GestionSocios
+from views.components.base_frame import BaseFrame
 
 
-class HomeView(tk.Frame):
+class HomeView(BaseFrame):
 
     def __init__(self, parent, controller):
-        super().__init__(parent)
-        self.columnconfigure(0, weight=1)
+        super().__init__(parent, controller)
+
+        #? Datos de ejemplo, esto deberia traer la db
+        datos_libro = [
+            ("Cantidad de Libros:", "120"),
+            ("Libros Prestados:", "15"),
+            ("Libros Disponibles:", "105"),
+        ]
         
-        tk.Label(
-            self,
-            text="Pantalla Dashboard"
-        ).grid(row=0, column=0, sticky="ew")
+        datos_prestamos = [
+            ("Prestamos Activos:", "32"),
+            ("Prestamos Finalizados:", "23"),
+            ("Prestamos Con Atraso:", "6"),
+        ]
         
-        self.rowconfigure(1, weight=1)
+        datos_socios = [
+            ("Cantidad de Socios:", "54"),
+                ("Socios Con Prestamos:", "23")
+            ]
         
+        self.crear_titulo("Dashboard")
         
-        #?--- Frame central
-        self.inicio = tk.Frame(self)
-        
-        self.inicio.columnconfigure(0, weight=1)
-        self.inicio.columnconfigure(1, weight=1)
-        self.inicio.columnconfigure(2, weight=1)
-        
-        self.inicio.grid(row=1)
+        self.frame_central.columnconfigure((0,1,2), weight=1)
         
         #?-- Botones centrales
         ttk.Button(
-            self.inicio,
+            self.frame_central,
             text="📚 Gestión de Libros",
             style="Dashboard.TButton",
-            padding=(20,15),
+            padding=(20,20),
             command=lambda: controller.show_frame(GestionLibros)
         ).grid(row=0, column=0, padx=15, pady=10, sticky="ew")
         
         ttk.Button(
-            self.inicio,
+            self.frame_central,
             text="🔄 Gestión de Préstamos",
             style="Dashboard.TButton",
-            padding=(20,15),
+            padding=(20,20),
             command=lambda: controller.show_frame(GestionPrestamos)
         ).grid(row=0, column=1, padx=15, pady=10, sticky="ew")
         
         ttk.Button(
-            self.inicio,
+            self.frame_central,
             text="👥 Gestión de Socios",
             style="Dashboard.TButton",
-            padding=(20,15),
+            padding=(20,20),
             command=lambda: controller.show_frame(GestionSocios)
         ).grid(row=0, column=2, padx=15, pady=10, sticky="ew")
         
-        self.rowconfigure(2, weight=1)
         
-        #?--- Frame inferior/footer
-        self.listas = ttk.Frame(self)
-        self.listas.grid(row=2, column=0, padx=20, pady=(0, 30), sticky="nsew")
-        self.listas.columnconfigure((0, 1, 2), weight=1)
-        self.listas.rowconfigure(0, weight=1)
+        #? 
+        self.subtitulo = tk.Label(
+            self.frame_central,
+            text="Resumen",
+            font=("Arial", 14, "bold"),
+            pady=8,
+            padx=8
+        )
+        self.subtitulo.grid(row=1, column=1, sticky="nsew", padx=10, pady=(10,5))
         
+        self.crear_tree_libros()
+        self.renderizar_datos(datos_libro, self.tree_libros)
         
-        #?--- Secciones del footer
-        self.lista_libros = ttk.Frame(self.listas)
-        self.lista_libros.grid(row=0, column=0, padx=15, sticky="nsew")
-        self.lista_libros.columnconfigure(0, weight=1)
-        self.lista_prestamos = ttk.Frame(self.listas)
-        self.lista_prestamos.grid(row=0,column=1, sticky="nsew")
-        self.lista_socios = ttk.Frame(self.listas)
-        self.lista_socios.grid(row=0,column=2, sticky="nsew")
+        self.crear_tree_socios()
+        self.renderizar_datos(datos_socios, self.tree_socios)
+        self.crear_tree_prestamos()
+        self.renderizar_datos(datos_prestamos, self.tree_prestamos)
         
-        #?--- Label de la seccion izq del footer
+    
+    def crear_tree_libros(self):
+        self.tree_libros = ttk.Treeview(self.frame_central,
+                                        columns=("atributo", "valor"),
+                                        show="tree",
+                                        height=4
+                                        )
+        self.tree_libros.grid(row=2, column=0, padx=15, pady=10, sticky="nsew")
+        self.tree_libros.column("#0", width=0, stretch=False)
+        self.tree_libros.column("atributo", width=150, anchor="w")
+        self.tree_libros.column("valor", width=50, anchor="center")
         
-        ttk.Label(self.lista_libros, text="Cantidad de Libros en biblioteca:").grid(sticky="ew")
+    def crear_tree_prestamos(self):
+        self.tree_prestamos = ttk.Treeview(self.frame_central,
+                                           columns=("atributo", "valor"),
+                                           show="tree",
+                                           height=4
+                                           )
+        self.tree_prestamos.grid(row=2, column=1, padx=15, pady=10, sticky="nsew")
+        self.tree_prestamos.column("#0", width=0, stretch=False)
+        self.tree_prestamos.column("atributo", width=150, anchor="w")
+        self.tree_prestamos.column("valor", width=50, anchor="center")
         
+    def crear_tree_socios(self):
+        self.tree_socios = ttk.Treeview(self.frame_central,
+                                        columns=("atributo", "valor"),
+                                        show="tree",
+                                        height=4
+                                        )
+        self.tree_socios.grid(row=2, column=2, padx=15, pady=10, sticky="nsew")
+        self.tree_socios.column("#0", width=0, stretch=False)
+        self.tree_socios.column("atributo", width=150, anchor="w")
+        self.tree_socios.column("valor", width=50, anchor="center")
         
-        #?--- Labels de la seccion centro del footer
-        
-        ttk.Label(self.lista_prestamos, text="Cantidad de Prestamos").grid(row=0,column=0,padx=15,pady=3,sticky="w")
-        ttk.Label(self.lista_prestamos, text="4").grid(row=0,column=1,padx=15,pady=3,sticky="w")
-        
-        ttk.Label(self.lista_prestamos, text="Prestamos completos:").grid(row=1,column=0,padx=15,pady=3,sticky="w")
-        ttk.Label(self.lista_prestamos, text="4").grid(row=1,column=1,padx=15,pady=3,sticky="w")
-        
-        ttk.Label(self.lista_prestamos, text="Prestamos pendientes:").grid(row=2,column=0,padx=15,pady=3,sticky="w")
-        ttk.Label(self.lista_prestamos, text="4").grid(row=2,column=1,padx=15,pady=3,sticky="w")
-        # probando = [1,2,3]
-        # for i in probando:
-        #     ttk.Label(self.lista_prestamos, text=str(i)).grid()
-        
-        
-        #?--- Labels de la seccion der del footer
-        ttk.Label(self.lista_socios, text="Cantidad de socios:").grid()
-        ttk.Label(self.lista_socios, text="Socios con prestamos:").grid()
+
+
+    def renderizar_datos(self, datos, tree):
+        for clave, valor in datos:
+            tree.insert("", "end", values=(clave, valor))

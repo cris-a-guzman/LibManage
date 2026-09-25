@@ -1,13 +1,14 @@
 import tkinter as tk
 from tkinter import messagebox
+from views.components.base_frame import BaseFrame
 
-
-class HistorialPrestamosSocio(tk.Frame):
+class HistorialPrestamosSocio(BaseFrame):
 
     def __init__(self, parent, controller, datos):
-        super().__init__(parent)
+        super().__init__(parent, controller)
         self.controller = controller
-        self.datos = datos
+        self.datos_socio = datos
+        self.datos_prestamos = {}
         #! Datos de ejemplo del socio
         self.socio = {
             "nombre": "Juan Perez",
@@ -34,13 +35,9 @@ class HistorialPrestamosSocio(tk.Frame):
             },
         ]
 
-        self.rowconfigure(0, weight=0)
-        self.rowconfigure(1, weight=1)
-        self.columnconfigure(0, weight=1)
-
-        tk.Label(
-            self, text="Historial de prestamos del socio", font=("Arial", 14, "bold")
-        ).grid(row=0, column=0, sticky="new", pady=12)
+        self.frame_central = self.crear_frame_central()
+        
+        self.crear_titulo("Historial de prestamos del socio")
 
         #? --- Frame Central
         self.frame_central = tk.Frame(self, bd=1, relief="solid", padx=15, pady=15)
@@ -120,10 +117,7 @@ class HistorialPrestamosSocio(tk.Frame):
         self.renderizar_listado()
 
         #? --- Volver Atras
-        self.btn_volver_atras = tk.Button(
-            self, text="Volver Atras", command=self.volver_atras
-        )
-        self.btn_volver_atras.grid(row=2, column=0, pady=(0, 15), ipadx=20, ipady=6)
+        self.crear_boton_volver(self.volver_atras)
 
     def renderizar_listado(self):
         """Arma el texto del listado de prestamos del socio."""

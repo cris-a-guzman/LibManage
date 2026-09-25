@@ -8,7 +8,19 @@ class BaseFrame(tk.Frame):
         
         self.rowconfigure(0, weight=0) # Título
         self.rowconfigure(1, weight=1) # Contenido principal
-        self.columnconfigure(0, weight=1) # Botones para volver
+        self.rowconfigure(2, weight=0) # Espacio libre
+        self.rowconfigure(3, weight=0) # Botones inferiores
+        self.columnconfigure(0, weight=1) 
+        
+        self.frame_central = self.crear_frame_central()
+        
+        #? Frame para los botones inferiores
+        self.frame_inferior = tk.Frame(self)
+        self.frame_inferior.grid(
+            row=3, column=0, sticky="ew", padx=10, pady=(5, 10)
+        )
+        self.frame_inferior.columnconfigure(0, weight=1)
+        self.frame_inferior.columnconfigure(1, weight=1)
         
     def crear_titulo(self, titulo):
         titulo_label = tk.Label(
@@ -19,9 +31,6 @@ class BaseFrame(tk.Frame):
             pady=8
         )
         titulo_label.grid(row=0, column=0, sticky="new", padx=10, pady=(10, 5))
-        
-        self.frame_central.columnconfigure(0, weight=4)
-        self.frame_central.rowconfigure(0, weight=0)
         
     def crear_frame_central(self):
         self.frame_central = tk.Frame(self, bd=1, relief="solid")
@@ -48,17 +57,17 @@ class BaseFrame(tk.Frame):
     
     def crear_boton_crear(self, texto, funcion_crear):
         self.btn_crear = tk.Button(
-            self.frame_central,
+            self.frame_inferior,
             text=texto,
-            fg="red",
+            fg="green",
             command=funcion_crear,
         )
-        self.btn_crear.grid(row=4, column=0, columnspan=1, sticky="ew", pady=(10, 0), ipady=6)
+        self.btn_crear.grid(row=0, column=0, sticky="ew", padx=(10,10), pady=(10, 0), ipady=6)
         
     def crear_boton_volver(self, funcion_volver):
         self.btn_volver = tk.Button(
-            self.frame_central, 
+            self.frame_inferior, 
             text="Volver atras", 
             command=self.volver_atras
         )
-        self.btn_volver.grid(row=4, column=1, columnspan=1, sticky="ew", pady=(15, 0), ipady=5)
+        self.btn_volver.grid(row=0, column=1, sticky="ew", padx=(10,10), pady=(10, 0), ipady=6)

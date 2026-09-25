@@ -17,7 +17,7 @@ class login_view(tk.Frame):
         label_password = tk.Label(self, text="Ingrese su contraseña")
         label_password.pack()
         
-        entry_password = tk.Entry(self, width=30)
+        entry_password = tk.Entry(self, width=30, show="*")
         entry_password.pack()
         
         accept_button = tk.Button(self, text="Entrar",command=lambda: controller.show_frame(HomeView))
