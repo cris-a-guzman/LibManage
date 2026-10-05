@@ -1,12 +1,15 @@
 views/__pycache__/
 *.pyc
 *.py[cod]
+*.cpython
 .venv/
 venv/
 env/
-
 .vscode/
 .idea/
+
+/__pycache__/
+*.pyc
 
 
 *.db
