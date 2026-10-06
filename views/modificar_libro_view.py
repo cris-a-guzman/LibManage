@@ -57,12 +57,8 @@ class ModificarLibro(tk.Frame):
         self.btn_cancelar = tk.Button(
             self.frame_botones, text="Cancelar y volver atras", command=self.descartar
         )
-        self.btn_cancelar.grid(row=0, column=1, padx=5, ipady=3, sticky="ew")
+        self.btn_cancelar.grid(row=0, column=2, padx=5, ipady=3, sticky="ew")
 
-        self.btn_eliminar = tk.Button(
-            self.frame_botones, text="Eliminar libro", command=self.eliminar_libro
-        )
-        self.btn_eliminar.grid(row=0, column=2, padx=5, ipady=3, sticky="ew")
 
     def crear_campo(self, placeholder, fila):
         entry = tk.Entry(self.frame_formulario, justify="center", width=40)

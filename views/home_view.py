@@ -29,7 +29,7 @@ class HomeView(BaseFrame):
                 ("Socios Con Prestamos:", "23")
             ]
         
-        self.crear_titulo("Dashboard")
+        self.crear_titulo("Inicio")
         
         self.frame_central.columnconfigure((0,1,2), weight=1)
         
