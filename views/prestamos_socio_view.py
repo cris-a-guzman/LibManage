@@ -1,31 +1,32 @@
 import tkinter as tk
 from tkinter import ttk
+from views.components.base_frame import BaseFrame
 
-class VistaPrestamosSocio(tk.Frame):
+class VistaPrestamosSocio(BaseFrame):
 
-    def __init__(self, parent, controller, datos):
-        super().__init__(parent)
+    def __init__(self, parent, controller, id_socio):
+        super().__init__(parent, controller)
         self.controller = controller
-        self.datos = datos
-        self.rowconfigure(0, weight=0)
-        self.rowconfigure(1, weight=1)
-        self.columnconfigure(0, weight=1)
+        self.socio = self.API.traer_socio_por_id(id_socio)
+        self.prestamos_socio = self.API.traer_prestamos_socio(id_socio)
+        
+        if self.prestamos_socio == None:
+            print("Algo salio mal, volviendo atras")
+        else:
+            print(self.socio)
+            print(self.prestamos_socio)
 
-        tk.Label(
-            self, text="Historial de Prestamos del Socio", font=("Arial", 14, "bold")
-        ).grid(row=0, column=0, sticky="new", pady=12)
-
-        # ?--- Frame Central
-        self.frame_central = tk.Frame(self, padx=20, pady=5)
-        self.frame_central.grid(row=1, sticky="nsew")
-
-        self.frame_central.columnconfigure(0, weight=4)
+        #? Frame Central
+        self.frame_central.columnconfigure(0, weight=1) #? Esto tambien se podria refactorizar
         self.frame_central.columnconfigure(1, weight=1)
         self.frame_central.rowconfigure(0, weight=0)
         self.frame_central.rowconfigure(1, weight=0)
         self.frame_central.rowconfigure(2, weight=1)
         self.frame_central.rowconfigure(3, weight=0)
         self.frame_central.rowconfigure(4, weight=0)
+        
+        #? Titulo
+        self.crear_titulo(f"Prestamos de {self.socio["nombre"]} {self.socio["apellido"]} ")
 
         #? Tabla de datos del socio
        
@@ -34,26 +35,27 @@ class VistaPrestamosSocio(tk.Frame):
         self.frame_datos.rowconfigure(0, weight=1)
         self.frame_datos.rowconfigure(1, weight=1)
         self.frame_datos.rowconfigure(2, weight=1)
-        self.frame_datos.rowconfigure(3, weight=1)
         self.frame_datos.columnconfigure(0, weight=1)
+        
+        lbl_id = tk.Label(
+            self.frame_central,
+            text=f"ID: {self.socio["id_socio"]}"
+        )
+        
+        lbl_nombre = tk.Label(
+            self.frame_datos,
+            text=f"Nombre: {self.socio['nombre']} {self.socio['apellido']}"
+        )
 
-        
-        datos_socio = {
-            "nombre_apellido":"Javier Pastore",
-            "DNI":"21362518",
-            "telefono":"3515517689",
-            "fecha_asociacion": "19/07/1998"
-            
-        }
-        
-        lbl_nombre = tk.Label(self.frame_datos, text=datos_socio["nombre_apellido"])
-        lbl_dni = tk.Label(self.frame_datos, text=datos_socio["DNI"])
-        lbl_telefono = tk.Label(self.frame_datos, text=datos_socio["telefono"])
-        lbl_fecha_asociacion = tk.Label(self.frame_datos, text=datos_socio["fecha_asociacion"])
-        lbl_nombre.grid(row=0, column=0)
-        lbl_dni.grid(row=1, column=0)
-        lbl_telefono.grid(row=2, column=0)
-        lbl_fecha_asociacion.grid(row=3, column=0)
+        lbl_dni = tk.Label(
+            self.frame_datos,
+            text=f"DNI: {self.socio["dni"]}"
+        )
+
+        lbl_id.grid(row=0, column=0)
+        lbl_nombre.grid(row=1, column=0)
+        lbl_dni.grid(row=2, column=0)
+
 
 
         #? --- Tabla de Prestamos
@@ -64,22 +66,34 @@ class VistaPrestamosSocio(tk.Frame):
         self.frame_tabla.rowconfigure(0, weight=1)
         self.frame_tabla.columnconfigure(0, weight=1)
 
-        columnas = ("id", "socio", "Dia de Prestamo", "Dia de devolucion", "Dias de retraso")
+        columnas = (
+                "id",
+                "libro",
+                "fecha_prestamo",
+                "fecha_devolucion_estimada",
+                "fecha_devolucion_real",
+                "estado"
+                )
+        
         self.tabla = ttk.Treeview(
             self.frame_tabla, columns=columnas, show="headings"
         )
 
         self.tabla.heading("id", text="ID")
-        self.tabla.heading("socio", text="Socio")
-        self.tabla.heading("Dia de Prestamo", text="Dia de Prestamo")
-        self.tabla.heading("Dia de devolucion", text="Dia de devolucion")
-        self.tabla.heading("Dias de retraso", text="Dias de retraso")
+        self.tabla.heading("libro", text="Libro")
+        self.tabla.heading("fecha_prestamo", text="Fecha prés")
+        self.tabla.heading("fecha_devolucion_estimada", text="Fecha devo")
+        self.tabla.heading("fecha_devolucion_real", text="Devo real")
+        self.tabla.heading("estado", text="Estado")
+
 
         self.tabla.column("id", width=40, anchor="center")
-        self.tabla.column("socio", width=80, anchor="center")
-        self.tabla.column("Dia de Prestamo", width=100, anchor="center")
-        self.tabla.column("Dia de devolucion", width=100, anchor="center")
-        self.tabla.column("Dias de retraso", width=80, anchor="center")
+        self.tabla.column("libro", width=100, anchor="center")
+        self.tabla.column("fecha_prestamo", width=60, anchor="center")
+        self.tabla.column("fecha_devolucion_estimada", width=60, anchor="center")
+        self.tabla.column("fecha_devolucion_real", width=60, anchor="center")
+        self.tabla.column("estado", width=60, anchor="center")
+
 
         scrollbar = ttk.Scrollbar(
             self.frame_tabla, orient="vertical", command=self.tabla.yview
@@ -96,25 +110,26 @@ class VistaPrestamosSocio(tk.Frame):
         )
         self.frame_acciones.columnconfigure(0, weight=1)
 
-        self.btn_atras = tk.Button(
-            self.frame_central, 
-            text="Volver atras", 
-            command=self.volver_atras
-        )
-        self.btn_atras.grid(row=4, column=1, columnspan=1, sticky="ew", pady=(15, 0), ipady=5)
-        #! Ejemplo de datos
-        self.prestamos_datos = [
-            (1, "Javier Pastore", "19/09/2026", "25/09/2026", "0"),
-            (2, "Javier Pastore", "20/08/2026", "05/09/2026", "10")
-        ]
-        self.actualizar_tabla(self.prestamos_datos)
+        self.crear_boton_volver(self.volver_atras)
+        self.actualizar_tabla(self.prestamos_socio)
 
-    def actualizar_tabla(self, lista_prestamos):
-        """Limpia y vuelve a cargar los datos en la tabla."""
+    def actualizar_tabla(self, prestamos_socio):
         for item in self.tabla.get_children():
             self.tabla.delete(item)
-        for prestamo in lista_prestamos:
-            self.tabla.insert("", "end", values=prestamo)
+
+        for prestamo in prestamos_socio:
+            self.tabla.insert(
+                "",
+                "end",
+                values=(
+                    prestamo["id"],
+                    prestamo["libro"],
+                    prestamo["fecha_prestamo"],
+                    prestamo["fecha_devolucion_estimada"],
+                    prestamo["fecha_devolucion_real"],
+                    prestamo["estado"]
+                )
+            )
 
     def buscar(self, event=None):
         """Filtra la lista de prestamos según lo ingresado."""
