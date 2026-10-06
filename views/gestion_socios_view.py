@@ -8,7 +8,7 @@ class GestionSocios(BaseFrame):
         self.controller = controller
 
         #! Datos de ejemplo para los socios
-        self.socios = self.API.traer_socios(self)
+        self.socios = self.API.traer_socios()
 
         #? Frame Central
         self.frame_central.columnconfigure(0, weight=1) #? Esto tambien se podria refactorizar
@@ -147,7 +147,7 @@ class GestionSocios(BaseFrame):
         from views.home_view import HomeView
         self.controller.show_frame(HomeView)
     
-    def ver_prestamos(self):
+    def ver_prestamos(self, datos=None):
         seleccionado = self.tabla.selection()
 
         if not seleccionado:

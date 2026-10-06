@@ -1,86 +1,60 @@
 # Lo de abajo es un mock de como vienen los datos desde la db
 # Es un ejemplo para tenerlo de referencia y ver como quedaria
-
+print("Entro en database.py")
 class ApiDatabase:
     
     def __init__(self):
-        pass
-    
-    def traer_socios(self):
-        self.socios = [
-            {
-                "id_socio": 1,
-                "dni": 23147884,
-                "nombre": "Mirtha",
-                "apellido": "LeGrand"
-            },
-            {
-                "id_socio": 2,
-                "dni": 28456732,
-                "nombre": "Carlos",
-                "apellido": "Gómez"
-            },
-            {
-                "id_socio": 3,
-                "dni": 31984567,
-                "nombre": "Lucía",
-                "apellido": "Fernández"
-            },
-            {
-                "id_socio": 4,
-                "dni": 26743129,
-                "nombre": "Martín",
-                "apellido": "Rodríguez"
-            },
-            {
-                "id_socio": 5,
-                "dni": 35421678,
-                "nombre": "Sofía",
-                "apellido": "Martínez"
-            },
-            {
-                "id_socio": 6,
-                "dni": 29876543,
-                "nombre": "Diego",
-                "apellido": "Pérez"
-            },
-            {
-                "id_socio": 7,
-                "dni": 32654981,
-                "nombre": "Valentina",
-                "apellido": "López"
-            },
-            {
-                "id_socio": 8,
-                "dni": 25134879,
-                "nombre": "Julián",
-                "apellido": "Sánchez"
-            },
-            {
-                "id_socio": 9,
-                "dni": 37482156,
-                "nombre": "Camila",
-                "apellido": "Torres"
-            },
-            {
-                "id_socio": 10,
-                "dni": 28943167,
-                "nombre": "Federico",
-                "apellido": "Ramírez"
-            },
-            {
-                "id_socio": 11,
-                "dni": 33571249,
-                "nombre": "Agustina",
-                "apellido": "Díaz"
-            },
-            {
-                "id_socio": 12,
-                "dni": 27654321,
-                "nombre": "Nicolás",
-                "apellido": "Herrera"
-            }
-        ]
+        from database.mock_datos import socios, libros, prestamos, detalle_prestamo
+        self.socios = socios
+        self.libros = libros
+        self.prestamos = prestamos
+        self.detalle_prestamo = detalle_prestamo
         
+    def traer_socio_por_id(self, id_socio):
+            return next(
+                (socio for socio in self.socios
+                if socio.get("id_socio") == id_socio),
+                None
+            )
+        
+    def traer_socios(self):
         return self.socios
+    
+    def traer_prestamos_socio(self, id_socio):
+        resultado = []
+
+        for prestamo in self.prestamos:
+            if prestamo["id_socio"] != id_socio:
+                continue
+
+            libros = []
+
+            for detalle in self.detalle_prestamo:
+                if detalle["id_prestamo"] == prestamo["id_prestamo"]:
+
+                    libro = next(
+                        (
+                            libro for libro in self.libros
+                            if libro["id_libro"] == detalle["id_libro"]
+                        ),
+                        None
+                    )
+
+                    if libro:
+                        libros.append(libro["titulo"])
+
+            resultado.append({
+                "id": prestamo["id_prestamo"],
+                "libro": ", ".join(libros),
+                "fecha_prestamo": prestamo["fecha_prestamo"],
+                "fecha_devolucion_estimada": prestamo["fecha_devolucion_estimada"],
+                "fecha_devolucion_real": prestamo["fecha_devolucion_real"],
+                "estado": prestamo["estado"]
+            })
+
+        return resultado
+        
+            
+        
+        
 

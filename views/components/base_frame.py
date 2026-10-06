@@ -8,7 +8,7 @@ class BaseFrame(tk.Frame):
         
         
         #! Lo de abajo es un mock de los datos de los socios
-        self.API = ApiDatabase
+        self.API = ApiDatabase()
         #? Configuración del grid principal de la pantalla
         
         self.rowconfigure(0, weight=0) # Título
