@@ -8,13 +8,7 @@ class GestionLibros(BaseFrame):
         self.controller = controller
 
         #? Datos de prueba con los mismos campos que la tabla libro de la BD
-        self.libros_datos = [
-            {"id_libro": 1, "isbn": "9788491050155", "titulo": "Don Quijote", "autor": "Cervantes", "anio": 1605, "cantidad_total": 3},
-            {"id_libro": 2, "isbn": "9788437604947", "titulo": "Cien años de soledad", "autor": "García Márquez", "anio": 1967, "cantidad_total": 2},
-            {"id_libro": 3, "isbn": "9788478887194", "titulo": "El Principito", "autor": "Saint-Exupéry", "anio": 1943, "cantidad_total": 5},
-            {"id_libro": 4, "isbn": "9788499089515", "titulo": "Ficciones", "autor": "Borges", "anio": 1944, "cantidad_total": 1},
-        ]
-
+        self.libros_datos = self.API.traer_libros()
         #? Frame principal
         self.frame_central = self.crear_frame_central()
 
@@ -41,32 +35,9 @@ class GestionLibros(BaseFrame):
         self.frame_libros.columnconfigure(0, weight=1)
 
         columnas = ("id_libro", "isbn", "titulo", "autor", "anio", "cantidad_total")
-
-        self.tabla = ttk.Treeview(
-            self.frame_libros, columns=columnas, show="headings", selectmode="browse"
-        )
-
-        self.tabla.heading("id_libro", text="ID")
-        self.tabla.heading("isbn", text="ISBN")
-        self.tabla.heading("titulo", text="Título")
-        self.tabla.heading("autor", text="Autor")
-        self.tabla.heading("anio", text="Año")
-        self.tabla.heading("cantidad_total", text="Cantidad")
-
-        self.tabla.column("id_libro", width=50, anchor="center")
-        self.tabla.column("isbn", width=120, anchor="center")
-        self.tabla.column("titulo", width=200, anchor="w")
-        self.tabla.column("autor", width=150, anchor="w")
-        self.tabla.column("anio", width=60, anchor="center")
-        self.tabla.column("cantidad_total", width=80, anchor="center")
-
-        scrollbar = ttk.Scrollbar(
-            self.frame_libros, orient="vertical", command=self.tabla.yview
-        )
-        self.tabla.configure(yscroll=scrollbar.set)
-
-        self.tabla.grid(row=0, column=0, sticky="nsew")
-        scrollbar.grid(row=0, column=1, sticky="ns")
+        ancho = (50,120,200,150,60,80)
+        modo = "browse"
+        self.crear_treeview(columnas,ancho, modo)
 
         #? Doble clic sobre una fila = modificar ese libro
         self.tabla.bind("<Double-1>", lambda e: self.modificar_seleccionado())

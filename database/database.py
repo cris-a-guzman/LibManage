@@ -1,6 +1,5 @@
 # Lo de abajo es un mock de como vienen los datos desde la db
 # Es un ejemplo para tenerlo de referencia y ver como quedaria
-print("Entro en database.py")
 class ApiDatabase:
     
     def __init__(self):
@@ -19,6 +18,12 @@ class ApiDatabase:
         
     def traer_socios(self):
         return self.socios
+    
+    def traer_libros_prestados(self):
+        return self.detalle_prestamo
+    
+    def traer_libros(self):
+        return self.libros
     
     def traer_prestamos_socio(self, id_socio):
         resultado = []

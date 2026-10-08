@@ -16,7 +16,6 @@ class GestionSocios(BaseFrame):
         
         #? Titulo
         self.crear_titulo("Gestion de Socios")
-        
 
         #? Barra de busqueda
         self.crear_barra_busqueda("Buscar Socio", self.buscar)
@@ -38,29 +37,11 @@ class GestionSocios(BaseFrame):
         )
         self.frame_tabla.rowconfigure(0, weight=1)
         self.frame_tabla.columnconfigure(0, weight=1)
-
+        
+        #? Creando el treeview
         columnas = ("id_socio", "dni", "nombre", "apellido")
-        self.tabla = ttk.Treeview(
-            self.frame_tabla, columns=columnas, show="headings"
-        )
-
-        self.tabla.heading("id_socio", text="ID")
-        self.tabla.heading("dni", text="DNI")
-        self.tabla.heading("nombre", text="Nombre")
-        self.tabla.heading("apellido", text="Apellido")
-
-        self.tabla.column("id_socio", width=40, anchor="center")
-        self.tabla.column("dni", width=80)
-        self.tabla.column("nombre", width=140)
-        self.tabla.column("apellido", width=140, anchor="center")
-
-        scrollbar = ttk.Scrollbar(
-            self.frame_tabla, orient="vertical", command=self.tabla.yview
-        )
-        self.tabla.configure(yscroll=scrollbar.set)
-
-        self.tabla.grid(row=0, column=0, sticky="nsew")
-        scrollbar.grid(row=0, column=1, sticky="ns")
+        ancho = (40,80,140,140)
+        self.crear_treeview(columnas, ancho)
         
         #? Ver prestamos
         self.crear_boton_ver("Préstamos / Historial", self.ver_prestamos)
@@ -104,7 +85,6 @@ class GestionSocios(BaseFrame):
                 )
             )
 
-
     def buscar(self, event=None):
         """Filtra los socios según lo ingresado."""
         texto = self.busqueda.get().strip().lower()
@@ -122,12 +102,10 @@ class GestionSocios(BaseFrame):
 
         self.actualizar_tabla(resultados)
 
-
     def limpiar_busqueda(self):
         """Restablece la búsqueda y muestra todos los socios."""
         self.busqueda.delete(0, tk.END)
         self.actualizar_tabla(self.socios)
-
 
     def ordenar(self):
         """Ordena los socios por apellido."""

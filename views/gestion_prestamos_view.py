@@ -46,35 +46,9 @@ class GestionPrestamos(BaseFrame):
         self.crear_boton_filtrar(self.filtrar)
 
         #? --- Tabla de Prestamos
-        self.frame_tabla = tk.Frame(self.frame_central)
-        self.frame_tabla.grid(
-            row=2, column=0, columnspan=2, sticky="nsew", pady=10
-        )
-        self.frame_tabla.rowconfigure(0, weight=1)
-        self.frame_tabla.columnconfigure(0, weight=1)
-
         columnas = ("id", "socio", "libro", "vence")
-        self.tabla = ttk.Treeview(
-            self.frame_tabla, columns=columnas, show="headings"
-        )
-
-        self.tabla.heading("id", text="ID")
-        self.tabla.heading("socio", text="Socio")
-        self.tabla.heading("libro", text="Libro")
-        self.tabla.heading("vence", text="Vence")
-
-        self.tabla.column("id", width=40, anchor="center")
-        self.tabla.column("socio", width=140)
-        self.tabla.column("libro", width=140)
-        self.tabla.column("vence", width=80, anchor="center")
-
-        scrollbar = ttk.Scrollbar(
-            self.frame_tabla, orient="vertical", command=self.tabla.yview
-        )
-        self.tabla.configure(yscroll=scrollbar.set)
-
-        self.tabla.grid(row=0, column=0, sticky="nsew")
-        scrollbar.grid(row=0, column=1, sticky="ns")
+        ancho = (40,140,140,80)
+        self.crear_treeview(columnas, ancho)
 
         # --- Botones de Acción (Inferiores)
         self.frame_acciones = tk.Frame(self.frame_central)
