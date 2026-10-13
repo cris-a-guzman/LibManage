@@ -37,20 +37,13 @@ class GestionLibros(BaseFrame):
         columnas = ("id_libro", "isbn", "titulo", "autor", "anio", "cantidad_total")
         ancho = (50,120,200,150,60,80)
         modo = "browse"
-        self.crear_treeview(columnas,ancho, modo)
+        self.crear_treeview(self.frame_libros, columnas,ancho, modo)
 
         #? Doble clic sobre una fila = modificar ese libro
         self.tabla.bind("<Double-1>", lambda e: self.modificar_seleccionado())
+        
+        self.frame_inferior.columnconfigure(2, weight=1)
 
-        #? Boton Modificar (actua sobre la fila seleccionada)
-        btn_modificar = tk.Button(
-            self.frame_libros,
-            text="Modificar",
-            command=self.modificar_seleccionado
-        )
-        btn_modificar.grid(row=1, column=0, columnspan=2, sticky="e", pady=(5, 0))
-
-        self.actualizar_tabla(self.libros_datos)
 
         #? Boton Crear Libro
         self.crear_boton_crear("Crear Libro", self.modificar_libro)
@@ -58,6 +51,15 @@ class GestionLibros(BaseFrame):
         #? Boton Volver Atras
         self.crear_boton_volver(self.volver_atras)
 
+        #? Boton Modificar (actua sobre la fila seleccionada)
+        btn_modificar = tk.Button(
+            self.frame_inferior,
+            text="Modificar",
+            command=self.modificar_seleccionado
+        )
+        btn_modificar.grid(row=0, column=2, sticky="ew", padx=(10,10), pady=(10, 0), ipady=6)
+
+        self.actualizar_tabla(self.libros_datos)
     def actualizar_tabla(self, lista_libros):
         for item in self.tabla.get_children():
             self.tabla.delete(item)
@@ -111,9 +113,9 @@ class GestionLibros(BaseFrame):
         self.modificar_libro(libro)
 
     def modificar_libro(self, libro=None):
-        from views.modificar_libro_view import ModificarLibro
-        self.controller.show_frame(ModificarLibro)
+        from views.libros_views.modificar_libro_view import ModificarLibro
+        self.controller.show_frame(ModificarLibro, libro)
 
     def volver_atras(self):
-        from views.home_view import HomeView
+        from views.home_view.home_view import HomeView
         self.controller.show_frame(HomeView)

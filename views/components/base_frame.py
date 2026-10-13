@@ -78,32 +78,37 @@ class BaseFrame(tk.Frame):
         )
         self.btn_volver.grid(row=0, column=1, sticky="ew", padx=(10,10), pady=(10, 0), ipady=6)
         
-        
-    def crear_treeview(self, columnas, ancho, modo=None):
+    def crear_treeview(self, frame_parent, columnas, ancho, modo=None):
         self.frame_tabla = tk.Frame(self.frame_central)
         self.frame_tabla.grid(
             row=2, column=0, columnspan=2, sticky="nsew", pady=10
         )
+
+        self.frame_central.rowconfigure(2, weight=1)
         self.frame_tabla.rowconfigure(0, weight=1)
         self.frame_tabla.columnconfigure(0, weight=1)
 
-        if modo is not None:
-            self.tabla = ttk.Treeview(
-                self.frame_tabla, columns=columnas, show="headings"
-            )
-        else:
-            self.tabla = ttk.Treeview(
-                self.frame_libros, columns=columnas, show="headings", selectmode="browse"
-            )
+        self.tabla = ttk.Treeview(
+            self.frame_tabla,
+            columns=columnas,
+            show="headings",
+            selectmode="browse"
+        )
 
         for idx, columna in enumerate(columnas):
-            self.tabla.heading(f"{columna.lower()}", text=f"{columna.title()}")
-            self.tabla.column(f"{columna.lower()}", width=ancho[idx], anchor="center")
+            self.tabla.heading(columna, text=columna.title())
+            self.tabla.column(
+                columna,
+                width=ancho[idx],
+                anchor="center"
+            )
 
         scrollbar = ttk.Scrollbar(
-            self.frame_tabla, orient="vertical", command=self.tabla.yview
+            self.frame_tabla,
+            orient="vertical",
+            command=self.tabla.yview
         )
-        self.tabla.configure(yscroll=scrollbar.set)
+        self.tabla.configure(yscrollcommand=scrollbar.set)
 
         self.tabla.grid(row=0, column=0, sticky="nsew")
         scrollbar.grid(row=0, column=1, sticky="ns")

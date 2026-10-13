@@ -11,17 +11,16 @@ class GestionPrestamos(BaseFrame):
 
         # ?--- Frame Central
         self.frame_central = self.crear_frame_central()
-
-        
-        #? -- TItulo
-        self.crear_titulo("Gestion de Prestamos")
-        
         self.frame_central.columnconfigure(0, weight=4)
         self.frame_central.columnconfigure(1, weight=1)
         self.frame_central.rowconfigure(0, weight=0)
         self.frame_central.rowconfigure(1, weight=0) #? Esto tambien se podria refactorizar
         self.frame_central.rowconfigure(2, weight=1)
         self.frame_central.rowconfigure(3, weight=0)
+
+        #? -- TItulo
+        self.crear_titulo("Gestion de Prestamos")
+        
 
         #? --- Barra de busqueda
         self.crear_barra_busqueda("Buscar Prestamo", self.buscar)
@@ -48,7 +47,7 @@ class GestionPrestamos(BaseFrame):
         #? --- Tabla de Prestamos
         columnas = ("id", "socio", "libro", "vence")
         ancho = (40,140,140,80)
-        self.crear_treeview(columnas, ancho)
+        self.crear_treeview(self.frame_central, columnas, ancho)
 
         # --- Botones de Acción (Inferiores)
         self.frame_acciones = tk.Frame(self.frame_central)
@@ -128,9 +127,9 @@ class GestionPrestamos(BaseFrame):
         self.actualizar_tabla(self.prestamos_datos)
 
     def registrar_prestamo(self):
-        from views.registrar_prestamo_view import RegistrarPrestamo
+        from views.prestamos_views.registrar_prestamo_view import RegistrarPrestamo
         self.controller.show_frame(RegistrarPrestamo)
         
     def volver_atras(self): #! Esto lo podriamos pasar a controller me parece
-        from views.home_view import HomeView
+        from views.home_view.home_view import HomeView
         self.controller.show_frame(HomeView)

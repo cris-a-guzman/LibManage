@@ -136,5 +136,5 @@ class HistorialPrestamosSocio(BaseFrame):
         print(f"Mostrando prestamos completos de {self.socio['nombre']}...")
 
     def volver_atras(self):
-        from views.gestion_socios_view import GestionSocios
+        from views.socio_views.gestion_socios_view import GestionSocios
         self.controller.show_frame(GestionSocios)

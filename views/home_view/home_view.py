@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
-from views.gestion_libros_view import GestionLibros
-from views.gestion_prestamos_view import GestionPrestamos
-from views.gestion_socios_view import GestionSocios
+from views.libros_views.gestion_libros_view import GestionLibros
+from views.prestamos_views.gestion_prestamos_view import GestionPrestamos
+from views.socio_views.gestion_socios_view import GestionSocios
 from views.components.base_frame import BaseFrame
 
 
