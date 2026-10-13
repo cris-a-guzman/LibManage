@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
-from views.gestion_libros_view import GestionLibros
-from views.gestion_prestamos_view import GestionPrestamos
-from views.gestion_socios_view import GestionSocios
+from views.libros_views.gestion_libros_view import GestionLibros
+from views.prestamos_views.gestion_prestamos_view import GestionPrestamos
+from views.socio_views.gestion_socios_view import GestionSocios
 from views.components.base_frame import BaseFrame
 
 
@@ -12,10 +12,12 @@ class HomeView(BaseFrame):
         super().__init__(parent, controller)
 
         #? Datos de ejemplo, esto deberia traer la db
+        #? Asi deberia ser cuando tengamos la conexion a la db
+        
         datos_libro = [
-            ("Cantidad de Libros:", "120"),
-            ("Libros Prestados:", "15"),
-            ("Libros Disponibles:", "105"),
+            ("Cantidad de Libros:", len(self.API.traer_libros())),
+            ("Libros Prestados:", len(self.API.traer_libros_prestados())),
+            ("Libros Disponibles:", len(self.API.traer_libros_prestados())-10),
         ]
         
         datos_prestamos = [

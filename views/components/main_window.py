@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from views.login_view import login_view
+from views.login_view.login_view import login_view
 
 class MainWindow(tk.Tk):
     

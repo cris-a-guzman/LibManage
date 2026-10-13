@@ -9,6 +9,7 @@ class GestionSocios(BaseFrame):
 
         #! Datos de ejemplo para los socios
         self.socios = self.API.traer_socios()
+        print(self.socios)
 
         #? Frame Central
         self.frame_central.columnconfigure(0, weight=1) #? Esto tambien se podria refactorizar
@@ -16,7 +17,6 @@ class GestionSocios(BaseFrame):
         
         #? Titulo
         self.crear_titulo("Gestion de Socios")
-        
 
         #? Barra de busqueda
         self.crear_barra_busqueda("Buscar Socio", self.buscar)
@@ -26,41 +26,11 @@ class GestionSocios(BaseFrame):
 
         #? Boton Filtrar
         self.crear_boton_filtrar(self.filtrar)
-
-        #? Frame de tabla 
-        self.frame_tabla = tk.Frame(self.frame_central)
-        self.frame_tabla.grid(
-            row=2,
-            column=0,
-            columnspan=2,
-            sticky="nsew",
-            pady=10
-        )
-        self.frame_tabla.rowconfigure(0, weight=1)
-        self.frame_tabla.columnconfigure(0, weight=1)
-
+        
+        #? Creando el treeview
         columnas = ("id_socio", "dni", "nombre", "apellido")
-        self.tabla = ttk.Treeview(
-            self.frame_tabla, columns=columnas, show="headings"
-        )
-
-        self.tabla.heading("id_socio", text="ID")
-        self.tabla.heading("dni", text="DNI")
-        self.tabla.heading("nombre", text="Nombre")
-        self.tabla.heading("apellido", text="Apellido")
-
-        self.tabla.column("id_socio", width=40, anchor="center")
-        self.tabla.column("dni", width=80)
-        self.tabla.column("nombre", width=140)
-        self.tabla.column("apellido", width=140, anchor="center")
-
-        scrollbar = ttk.Scrollbar(
-            self.frame_tabla, orient="vertical", command=self.tabla.yview
-        )
-        self.tabla.configure(yscroll=scrollbar.set)
-
-        self.tabla.grid(row=0, column=0, sticky="nsew")
-        scrollbar.grid(row=0, column=1, sticky="ns")
+        ancho = (40,80,140,140)
+        self.crear_treeview(self.frame_central, columnas, ancho)
         
         #? Ver prestamos
         self.crear_boton_ver("Préstamos / Historial", self.ver_prestamos)
@@ -76,13 +46,13 @@ class GestionSocios(BaseFrame):
         
     def crear_boton_ver(self, texto, funcion_ver):
         self.frame_inferior.columnconfigure(2, weight=1)
-        self.btn_crear = tk.Button(
+        self.btn_ver = tk.Button(
             self.frame_inferior,
             text=texto,
             fg="black",
             command=funcion_ver,
         )
-        self.btn_crear.grid(row=0, column=2, sticky="ew", padx=(10,10), pady=(10, 0), ipady=6)
+        self.btn_ver.grid(row=0, column=2, sticky="ew", padx=(10,10), pady=(10, 0), ipady=6)
 
     def filtrar(self):
         print("Filtrando")
@@ -104,7 +74,6 @@ class GestionSocios(BaseFrame):
                 )
             )
 
-
     def buscar(self, event=None):
         """Filtra los socios según lo ingresado."""
         texto = self.busqueda.get().strip().lower()
@@ -122,12 +91,10 @@ class GestionSocios(BaseFrame):
 
         self.actualizar_tabla(resultados)
 
-
     def limpiar_busqueda(self):
         """Restablece la búsqueda y muestra todos los socios."""
         self.busqueda.delete(0, tk.END)
         self.actualizar_tabla(self.socios)
-
 
     def ordenar(self):
         """Ordena los socios por apellido."""
@@ -139,12 +106,12 @@ class GestionSocios(BaseFrame):
         self.actualizar_tabla(socios_ordenados)
 
     def registrar_socio(self, socio=None):
-        from views.registrar_socio_view import RegistrarSocio
+        from views.socio_views.registrar_socio_view import RegistrarSocio
         self.controller.show_frame(RegistrarSocio, socio)
         # Una vez con la conexion a la db debemos resolver lo de pasar Socio
         
     def volver_atras(self): #! Esto lo podriamos pasar a controller me parece
-        from views.home_view import HomeView
+        from views.home_view.home_view import HomeView
         self.controller.show_frame(HomeView)
     
     def ver_prestamos(self, datos=None):
@@ -157,7 +124,7 @@ class GestionSocios(BaseFrame):
         item = self.tabla.item(seleccionado[0])
         id_socio = item["values"][0]
 
-        from views.prestamos_socio_view import VistaPrestamosSocio
+        from views.socio_views.prestamos_socio_view import VistaPrestamosSocio
         self.controller.show_frame(
             VistaPrestamosSocio,
             id_socio

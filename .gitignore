@@ -1,21 +1,20 @@
-views/__pycache__/
-*.pyc
+
+__pycache__/
 *.py[cod]
-*.cpython
+*$py.class
+
 .venv/
 venv/
 env/
+ENV/
+
+
 .vscode/
 .idea/
-
-/__pycache__/
-*.pyc
-
 
 *.db
 *.sqlite
 *.sqlite3
-
 
 .DS_Store
 Thumbs.db

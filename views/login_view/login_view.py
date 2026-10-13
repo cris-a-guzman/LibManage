@@ -1,5 +1,5 @@
 import tkinter as tk
-from views.home_view import HomeView
+from views.home_view.home_view import HomeView
 
 
 class login_view(tk.Frame):

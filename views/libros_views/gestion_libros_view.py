@@ -8,13 +8,7 @@ class GestionLibros(BaseFrame):
         self.controller = controller
 
         #? Datos de prueba con los mismos campos que la tabla libro de la BD
-        self.libros_datos = [
-            {"id_libro": 1, "isbn": "9788491050155", "titulo": "Don Quijote", "autor": "Cervantes", "anio": 1605, "cantidad_total": 3},
-            {"id_libro": 2, "isbn": "9788437604947", "titulo": "Cien años de soledad", "autor": "García Márquez", "anio": 1967, "cantidad_total": 2},
-            {"id_libro": 3, "isbn": "9788478887194", "titulo": "El Principito", "autor": "Saint-Exupéry", "anio": 1943, "cantidad_total": 5},
-            {"id_libro": 4, "isbn": "9788499089515", "titulo": "Ficciones", "autor": "Borges", "anio": 1944, "cantidad_total": 1},
-        ]
-
+        self.libros_datos = self.API.traer_libros()
         #? Frame principal
         self.frame_central = self.crear_frame_central()
 
@@ -41,45 +35,15 @@ class GestionLibros(BaseFrame):
         self.frame_libros.columnconfigure(0, weight=1)
 
         columnas = ("id_libro", "isbn", "titulo", "autor", "anio", "cantidad_total")
-
-        self.tabla = ttk.Treeview(
-            self.frame_libros, columns=columnas, show="headings", selectmode="browse"
-        )
-
-        self.tabla.heading("id_libro", text="ID")
-        self.tabla.heading("isbn", text="ISBN")
-        self.tabla.heading("titulo", text="Título")
-        self.tabla.heading("autor", text="Autor")
-        self.tabla.heading("anio", text="Año")
-        self.tabla.heading("cantidad_total", text="Cantidad")
-
-        self.tabla.column("id_libro", width=50, anchor="center")
-        self.tabla.column("isbn", width=120, anchor="center")
-        self.tabla.column("titulo", width=200, anchor="w")
-        self.tabla.column("autor", width=150, anchor="w")
-        self.tabla.column("anio", width=60, anchor="center")
-        self.tabla.column("cantidad_total", width=80, anchor="center")
-
-        scrollbar = ttk.Scrollbar(
-            self.frame_libros, orient="vertical", command=self.tabla.yview
-        )
-        self.tabla.configure(yscroll=scrollbar.set)
-
-        self.tabla.grid(row=0, column=0, sticky="nsew")
-        scrollbar.grid(row=0, column=1, sticky="ns")
+        ancho = (50,120,200,150,60,80)
+        modo = "browse"
+        self.crear_treeview(self.frame_libros, columnas,ancho, modo)
 
         #? Doble clic sobre una fila = modificar ese libro
         self.tabla.bind("<Double-1>", lambda e: self.modificar_seleccionado())
+        
+        self.frame_inferior.columnconfigure(2, weight=1)
 
-        #? Boton Modificar (actua sobre la fila seleccionada)
-        btn_modificar = tk.Button(
-            self.frame_libros,
-            text="Modificar",
-            command=self.modificar_seleccionado
-        )
-        btn_modificar.grid(row=1, column=0, columnspan=2, sticky="e", pady=(5, 0))
-
-        self.actualizar_tabla(self.libros_datos)
 
         #? Boton Crear Libro
         self.crear_boton_crear("Crear Libro", self.modificar_libro)
@@ -87,6 +51,15 @@ class GestionLibros(BaseFrame):
         #? Boton Volver Atras
         self.crear_boton_volver(self.volver_atras)
 
+        #? Boton Modificar (actua sobre la fila seleccionada)
+        btn_modificar = tk.Button(
+            self.frame_inferior,
+            text="Modificar",
+            command=self.modificar_seleccionado
+        )
+        btn_modificar.grid(row=0, column=2, sticky="ew", padx=(10,10), pady=(10, 0), ipady=6)
+
+        self.actualizar_tabla(self.libros_datos)
     def actualizar_tabla(self, lista_libros):
         for item in self.tabla.get_children():
             self.tabla.delete(item)
@@ -140,9 +113,9 @@ class GestionLibros(BaseFrame):
         self.modificar_libro(libro)
 
     def modificar_libro(self, libro=None):
-        from views.modificar_libro_view import ModificarLibro
-        self.controller.show_frame(ModificarLibro)
+        from views.libros_views.modificar_libro_view import ModificarLibro
+        self.controller.show_frame(ModificarLibro, libro)
 
     def volver_atras(self):
-        from views.home_view import HomeView
+        from views.home_view.home_view import HomeView
         self.controller.show_frame(HomeView)

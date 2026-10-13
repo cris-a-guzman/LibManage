@@ -91,12 +91,12 @@ class RegistrarSocio(tk.Frame):
             entry.insert(0, valor)
 
     def guardar_cambios(self):
-        from views.gestion_socios_view import GestionSocios
+        from views.socio_views.gestion_socios_view import GestionSocios
         messagebox.showinfo(title="Libro Guardado", message="Libro guardado exitosamente.")
         self.controller.show_frame(GestionSocios)
 
     def descartar(self):
-        from views.gestion_socios_view import GestionSocios
+        from views.socio_views.gestion_socios_view import GestionSocios
         messagebox.showinfo(title="Edicion Descartad", message="Edicion Descartada exitosamente.\n Volviendo atras...")
         self.controller.show_frame(GestionSocios)
 
@@ -105,6 +105,6 @@ class RegistrarSocio(tk.Frame):
             messagebox.showinfo(title="Socio eliminado", message="Socio eliminado exitosamente.")
             
     def ver_prestamos(self):
-        from views.prestamos_socio_view import VistaPrestamosSocio
+        from views.socio_views.prestamos_socio_view import VistaPrestamosSocio
         self.controller.show_frame(VistaPrestamosSocio)
             
