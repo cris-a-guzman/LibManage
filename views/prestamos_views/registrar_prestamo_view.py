@@ -172,5 +172,5 @@ class RegistrarPrestamo(tk.Frame):
         self.cancelar()
 
     def cancelar(self):
-        from views.gestion_prestamos_view import GestionPrestamos
+        from views.prestamos_views.gestion_prestamos_view import GestionPrestamos
         self.controller.show_frame(GestionPrestamos)
