@@ -120,7 +120,11 @@ class GestionPrestamos(BaseFrame):
 
         item = self.tabla.item(seleccion)
         prestamo_id = item["values"][0]
-
+        if tk.messagebox.askyesno("Confirmar", "¿Deseas finalizar este Prestamo?"):
+            #! Aca va la logica para devolverlo
+            tk.messagebox.showinfo(title="Operacion Exitosa", message="Prestamo finalizado exitosamente.")
+        else:
+            return
         self.prestamos_datos = [
             p for p in self.prestamos_datos if p[0] != prestamo_id
         ]

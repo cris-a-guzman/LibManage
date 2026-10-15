@@ -45,10 +45,14 @@ class ModificarLibro(tk.Frame):
         self.frame_formulario.grid(row=0, column=0)
 
         #?Textos
-        self.txt_titulo = self.crear_campo("Titulo del Libro", 0)
-        self.txt_autor = self.crear_campo("Autor", 1)
-        self.txt_anio = self.crear_campo("Año", 2)
-        self.txt_cantidad = self.crear_campo("Cantidad total", 3)
+        self.lbl_titulo = self.crear_etiqueta("Titulo", 0)
+        self.txt_titulo = self.crear_campo("Titulo del Libro", 1)
+        self.lbl_autor = self.crear_etiqueta("Autor", 2)
+        self.txt_autor = self.crear_campo("Autor", 3)
+        self.lbl_anio = self.crear_etiqueta("Año", 4)
+        self.txt_anio = self.crear_campo("Año", 5)
+        self.lbl_cantidad = self.crear_etiqueta("Cantidad Total", 6)
+        self.txt_cantidad = self.crear_campo("Cantidad total", 7)
 
         #?Se cargan los datos si existen
         self.cargar_datos()
@@ -72,11 +76,15 @@ class ModificarLibro(tk.Frame):
         )
         self.btn_cancelar.grid(row=0, column=2, padx=5, ipady=3, sticky="ew")
 
-
+    def crear_etiqueta(self, texto, fila):
+        label = tk.Label(self.frame_formulario, text=texto, justify="center", width=40)
+        label.grid(row=fila, column=0, pady=4, ipady=6)
+        return label
+    
     def crear_campo(self, placeholder, fila):
         entry = tk.Entry(self.frame_formulario, justify="center", width=40)
         entry.insert(0, placeholder)
-        entry.grid(row=fila, column=0, pady=8, ipady=6)
+        entry.grid(row=fila, column=0, pady=4, ipady=6)
         
         entry.bind("<FocusIn>", lambda e, p=placeholder: entry.delete(0, tk.END) if entry.get() == p else None)
         return entry
