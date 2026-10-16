@@ -1,0 +1,28 @@
+-- ============================================================
+-- LibManage - Plantilla de cuentas LOCALES
+-- 1. Copiar este archivo como 02_cuentas.local.sql.
+-- 2. Reemplazar LAS DOS claves de ejemplo por claves distintas y seguras.
+-- 3. Ejecutar UNA VEZ, con root, despues de 02_seguridad.sql.
+-- 4. NO subir 02_cuentas.local.sql a GitHub: contiene claves.
+--
+-- La plantilla .example (este archivo) SI puede versionarse porque no contiene
+-- contrasenas reales.
+-- ============================================================
+
+-- '%' permite la conexion TCP desde el host a MySQL en Docker.
+-- El Docker del laboratorio publica 3306 solo en 127.0.0.1 del host.
+-- Si se usa otro entorno, revisar el host permitido.
+
+CREATE USER 'administrador'@'%'
+    IDENTIFIED BY 'CAMBIAR_POR_CLAVE_ADMIN_DISTINTA';
+
+CREATE USER 'usuario_sistema'@'%'
+    IDENTIFIED BY 'CAMBIAR_POR_CLAVE_APP_DISTINTA';
+
+-- Asignar los roles creados por 02_seguridad.sql.
+GRANT 'rol_libmanage_admin' TO 'administrador'@'%';
+GRANT 'rol_libmanage_app' TO 'usuario_sistema'@'%';
+
+-- Activar cada rol automaticamente al iniciar sesion.
+SET DEFAULT ROLE 'rol_libmanage_admin' TO 'administrador'@'%';
+SET DEFAULT ROLE 'rol_libmanage_app' TO 'usuario_sistema'@'%';
