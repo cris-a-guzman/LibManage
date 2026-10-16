@@ -12,7 +12,9 @@ env/
 *.db
 *.sqlite
 *.sqlite3
+*.local.sql
 
 
 .DS_Store
 Thumbs.db
+
