@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from views.components.base_frame import BaseFrame
+from views.components.formulario_desplazable import FormularioDesplazable
 
 
 class ModificarLibro(BaseFrame):
@@ -35,7 +36,13 @@ class ModificarLibro(BaseFrame):
             
             self.titulo_label.grid(row=0, column=0, sticky="ew", padx=10, pady=(10, 5))
         #? --- Frame Central
-        self.frame_central = tk.Frame(self, bd=1, relief="solid", padx=20, pady=20)
+        self.scroll_formulario = FormularioDesplazable(
+            self.frame_central
+        )
+        self.scroll_formulario.pack(fill="both", expand=True)
+
+        self.frame_central = tk.Frame(self.scroll_formulario.contenido, bd=1, relief="solid", padx=20, pady=20)
+        self.frame_central.pack(fill="both", expand=True)
         self.frame_central.grid(row=1, column=0, sticky="nsew", padx=10, pady=(5, 10))
         
         self.frame_central.columnconfigure(0, weight=1)

@@ -1,8 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
-from datetime import date
+from datetime import date, datetime
 from views.components.lista_desplegable import AutocompleteCombobox
 from views.components.base_frame import BaseFrame
+from views.components.formulario_desplazable import FormularioDesplazable
 
 
 class RegistrarPrestamo(BaseFrame):
@@ -28,8 +29,13 @@ class RegistrarPrestamo(BaseFrame):
         ).grid(row=0, column=0, sticky="new", pady=12)
 
         # --- Frame Central
-        self.frame_central = tk.Frame(self, padx=20, pady=5)
-        self.frame_central.grid(row=1, column=0, sticky="nsew")
+        self.scroll_formulario = FormularioDesplazable(
+        self.frame_central
+        )
+        self.scroll_formulario.pack(fill="both", expand=True)
+
+        self.frame_central = tk.Frame(self.scroll_formulario.contenido, padx=20, pady=5)
+        self.frame_central.pack(fill="both", expand=True)
         self.frame_central.columnconfigure(0, weight=1)
 
         # --- Buscar Socio (DNI)
@@ -159,32 +165,68 @@ class RegistrarPrestamo(BaseFrame):
                     text=f"Libro Seleccionado: {libro_encontrado['titulo']}", bg="#d9f2d9"
                 )
 
+    
     def confirmar_prestamo(self):
         if not self.socio_seleccionado or not self.libro_seleccionado:
             messagebox.showwarning(
-                "Atención", "Debes seleccionar un socio y un libro válidos de la lista."
+                "Atención",
+                "Seleccioná un socio y un libro."
             )
             return
 
-        fecha_devolucion = self.entry_fecha_devolucion.get().strip()
-        if not fecha_devolucion or fecha_devolucion == "dd/mm/aaaa":
+        # Comprobar que no se modificaron los campos tras seleccionar
+        if (
+            self.combo_dni_socio.get().strip() != self.socio_seleccionado
+            or self.combo_libro.get().strip()
+            != self.libro_seleccionado["titulo"]
+        ):
             messagebox.showwarning(
-                "Atención", "Ingresa la fecha de devolución estimada."
+                "Atención",
+                "Volvé a seleccionar un socio y un libro válidos."
             )
             return
+
+        # Validar la fecha ingresada
+        fecha_texto = self.entry_fecha_devolucion.get().strip()
 
         try:
-            # Llamada al repositorio para persisitir el préstamo en MySQL
-            self.ApiPrestamos.crear_prestamo(
-                id_socio=self.socio_seleccionado,
+            fecha_devolucion = datetime.strptime(
+                fecha_texto, "%d/%m/%Y"
+            ).date()
+
+            if fecha_devolucion < date.today():
+                raise ValueError
+
+        except ValueError:
+            messagebox.showwarning(
+                "Fecha inválida",
+                "Ingresá una fecha válida, igual o posterior a hoy, "
+                "con formato dd/mm/aaaa."
+            )
+            return
+
+        # Registrar el préstamo en MySQL
+        try:
+            id_prestamo = self.ApiPrestamos.crear_prestamo(
+                dni_socio=self.socio_seleccionado,
                 id_libro=self.libro_seleccionado["id_libro"],
                 fecha_devolucion=fecha_devolucion
             )
-            messagebox.showinfo("Éxito", "Préstamo registrado correctamente.")
-            self.cancelar()
 
-        except Exception as err:
-            messagebox.showerror("Error", f"No se pudo registrar el préstamo: {err}")
+        except Exception as error:
+            messagebox.showerror(
+                "Error",
+                f"No se pudo registrar el préstamo: {error}"
+            )
+            return
+
+        messagebox.showinfo(
+            "Préstamo registrado",
+            f"El préstamo {id_prestamo} se registró correctamente."
+        )
+
+        self.cancelar()
+
 
     def cancelar(self):
         from views.prestamos_views.gestion_prestamos_view import GestionPrestamos
