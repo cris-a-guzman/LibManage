@@ -24,7 +24,8 @@ def listar_prestamos():
                     ),
                     'Sin libros'
                 ) AS libro,
-                p.fecha_devolucion_estimada AS vence
+                p.fecha_devolucion_estimada AS vence,
+                p.estado
 
             FROM prestamo p
 
@@ -41,13 +42,51 @@ def listar_prestamos():
                 p.id_prestamo,
                 s.nombre,
                 s.apellido,
-                p.fecha_devolucion_estimada
+                p.fecha_devolucion_estimada,
+                p.estado
 
             ORDER BY p.fecha_devolucion_estimada
         """
 
         cursor.execute(consulta)
         return cursor.fetchall()
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        conexion.close()
+
+
+
+def devolver_prestamo(id_prestamo):
+    conexion = obtener_conexion()
+
+    if conexion is None:
+        raise ConnectionError("No se pudo conectar a MySQL")
+
+    cursor = None
+
+    try:
+        cursor = conexion.cursor()
+
+        consulta = """
+            UPDATE prestamo
+            SET estado = 'devuelto',
+                fecha_devolucion_real = CURDATE()
+            WHERE id_prestamo = %s
+              AND estado = 'activo'
+              AND fecha_prestamo <= CURDATE()
+        """
+
+        cursor.execute(consulta, (id_prestamo,))
+        actualizado = cursor.rowcount > 0
+
+        conexion.commit()
+        return actualizado
+
+    except Exception:
+        conexion.rollback()
+        raise
 
     finally:
         if cursor is not None:
