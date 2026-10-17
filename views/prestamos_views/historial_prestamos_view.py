@@ -9,31 +9,6 @@ class HistorialPrestamosSocio(BaseFrame):
         self.controller = controller
         self.datos_socio = datos
         self.datos_prestamos = {}
-        #! Datos de ejemplo del socio
-        self.socio = {
-            "nombre": "Juan Perez",
-            "dni": "2011111111",
-            "telefono": "351-1234567",
-            "fecha_asociacion": "10/03/2025",
-        }
-
-        #! Datos de ejemplo de prestamos
-        self.prestamos = [
-            {
-                "numero": 1,
-                "estado": "Finalizado",
-                "fecha_prestamo": "01/08/26",
-                "fecha_devolucion": "10/08/26",
-                "dias_retraso": 0,
-            },
-            {
-                "numero": 3,
-                "estado": "Pendiente",
-                "fecha_prestamo": "20/08/26",
-                "fecha_devolucion": "xx/xx/xx",
-                "dias_retraso": 2,
-            },
-        ]
 
         self.frame_central = self.crear_frame_central()
         

@@ -9,10 +9,8 @@ class GestionSocios(BaseFrame):
         self.controller = controller
 
         #! Datos de ejemplo para los socios
-        # self.socios = self.API.traer_socios()
         #? Traer socios de la base de datos
         self.socios = listar_socios()
-        print(self.socios)
 
         #? Frame Central
         self.frame_central.columnconfigure(0, weight=1) #? Esto tambien se podria refactorizar

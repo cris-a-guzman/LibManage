@@ -81,8 +81,12 @@ class ModificarLibro(tk.Frame):
                 self.frame_botones, text="Dar de baja", command=self.eliminar_libro
             )
             self.btn_eliminar.grid(row=0, column=1, padx=5, ipady=3, sticky="ew")
-
-
+            
+    def crear_etiqueta(self, titulo, fila):
+        label = tk.Label(self.frame_formulario, text=titulo, justify="center", width=40)
+        label.grid(row=fila, column=0, pady=4, ipady=6)
+        return label
+        
     def crear_campo(self, placeholder, fila):
         entry = tk.Entry(self.frame_formulario, justify="center", width=40)
         entry.insert(0, placeholder)
