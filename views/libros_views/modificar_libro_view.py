@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-from repositories.libro_repo import crear_libro, actualizar_libro
+from repositories.libro_repo import crear_libro, actualizar_libro, dar_baja_libro
 
 class ModificarLibro(tk.Frame):
     def __init__(self, parent, controller, libro_datos=None):
@@ -71,6 +71,12 @@ class ModificarLibro(tk.Frame):
             self.frame_botones, text="Cancelar y volver atras", command=self.descartar
         )
         self.btn_cancelar.grid(row=0, column=2, padx=5, ipady=3, sticky="ew")
+
+        if self.libro_datos:
+            self.btn_eliminar = tk.Button(
+                self.frame_botones, text="Dar de baja", command=self.eliminar_libro
+            )
+            self.btn_eliminar.grid(row=0, column=1, padx=5, ipady=3, sticky="ew")
 
 
     def crear_campo(self, placeholder, fila):
@@ -159,7 +165,42 @@ class ModificarLibro(tk.Frame):
         messagebox.showinfo(title="Libro Descartad", message="Libro Descartado exitosamente.\n Volviendo atras...")
         self.controller.show_frame(GestionLibros)
 
+    
     def eliminar_libro(self):
-        if messagebox.askyesno("Confirmar", "¿Deseas eliminar este libro?"):
-            messagebox.showinfo(title="Libro eliminado", message="Libro eliminado exitosamente.")
-            
+        if not self.libro_datos:
+            return
+
+        confirmar = messagebox.askyesno(
+            "Confirmar baja",
+            "¿Deseás dar de baja este libro?"
+        )
+
+        if not confirmar:
+            return
+
+        try:
+            resultado = dar_baja_libro(
+                self.libro_datos["id_libro"]
+            )
+
+            if not resultado:
+                messagebox.showwarning(
+                    "Atención",
+                    "El libro no existe o ya fue dado de baja."
+                )
+                return
+
+        except Exception as error:
+            messagebox.showerror(
+                "Error",
+                f"No se pudo dar de baja el libro: {error}"
+            )
+            return
+
+        messagebox.showinfo(
+            "Operación exitosa",
+            "El libro fue dado de baja correctamente."
+        )
+
+        from views.libros_views.gestion_libros_view import GestionLibros
+        self.controller.show_frame(GestionLibros)
