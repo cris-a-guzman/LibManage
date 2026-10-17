@@ -1,16 +1,15 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from views.components.base_frame import BaseFrame
-from repositories.socio_repo import listar_socios
+
 
 class GestionSocios(BaseFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         self.controller = controller
 
-        #! Datos de ejemplo para los socios
         #? Traer socios de la base de datos
-        self.socios = listar_socios()
+        self.socios = self.ApiSocios.listar_socios()
 
         #? Frame Central
         self.frame_central.columnconfigure(0, weight=1) #? Esto tambien se podria refactorizar

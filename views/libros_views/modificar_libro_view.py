@@ -1,10 +1,11 @@
 import tkinter as tk
 from tkinter import messagebox
-from repositories.libro_repo import crear_libro, actualizar_libro, dar_baja_libro
+from views.components.base_frame import BaseFrame
 
-class ModificarLibro(tk.Frame):
+
+class ModificarLibro(BaseFrame):
     def __init__(self, parent, controller, libro_datos=None):
-        super().__init__(parent)
+        super().__init__(parent, controller)
         self.controller = controller
         self.libro_datos = libro_datos or {}
 
@@ -15,7 +16,7 @@ class ModificarLibro(tk.Frame):
         if libro_datos is not None:
             self.titulo_label = tk.Label(
                 self, 
-                text=f"Modificar Libro: {self.libro_datos.get("titulo", "")}", 
+                text=f"Modificar Libro: {self.libro_datos.get('titulo', '')}", 
                 font=("Arial", 14, "bold"),
                 bd=1, 
                 relief="solid", 
@@ -141,7 +142,7 @@ class ModificarLibro(tk.Frame):
         # Guardar en MySQL
         try:
             if self.libro_datos:
-                actualizar_libro(
+                self.ApiLibros.actualizar_libro(
                     self.libro_datos["id_libro"],
                     titulo,
                     autor,
@@ -150,7 +151,7 @@ class ModificarLibro(tk.Frame):
                 )
                 mensaje = "Libro modificado correctamente."
             else:
-                nuevo_id = crear_libro(titulo, autor, anio, cantidad)
+                nuevo_id = self.ApiLibros.crear_libro(titulo, autor, anio, cantidad)
                 mensaje = f"Libro creado correctamente con ID {nuevo_id}."
 
         except Exception as error:
@@ -187,7 +188,7 @@ class ModificarLibro(tk.Frame):
             return
 
         try:
-            resultado = dar_baja_libro(
+            resultado = self.ApiLibros.dar_baja_libro(
                 self.libro_datos["id_libro"]
             )
 

@@ -1,11 +1,19 @@
 import tkinter as tk
 from tkinter import ttk
 from database.database import ApiDatabase
-
+from repositories.conexion import obtener_conexion
+from repositories.libro_repo import LibroRepo
+from repositories.prestamo_repo import PrestamoRepo
+from repositories.socio_repo import SociosRepo
 class BaseFrame(tk.Frame):
     
     def __init__(self, parent, controller):
         super().__init__(parent)
+        self.controller = controller
+        self.conexion = obtener_conexion()
+        self.ApiLibros= LibroRepo(self.conexion)
+        self.ApiPrestamos = PrestamoRepo(self.conexion)
+        self.ApiSocios = SociosRepo(self.conexion)
         
         
         #! Lo de abajo es un mock de los datos de los socios
@@ -74,7 +82,7 @@ class BaseFrame(tk.Frame):
         self.btn_volver = tk.Button(
             self.frame_inferior, 
             text="Volver atras", 
-            command=self.volver_atras
+            command=funcion_volver
         )
         self.btn_volver.grid(row=0, column=1, sticky="ew", padx=(10,10), pady=(10, 0), ipady=6)
         

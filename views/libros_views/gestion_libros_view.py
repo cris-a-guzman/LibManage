@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from views.components.base_frame import BaseFrame
-from repositories.libro_repo import listar_libros
 
 class GestionLibros(BaseFrame):
     def __init__(self, parent, controller):
@@ -13,7 +12,7 @@ class GestionLibros(BaseFrame):
         #? Frame principal
         
         # ? Traer libros de la base de datos
-        self.libros_datos = listar_libros()
+        self.libros_datos = self.ApiLibros.listar_libros()
         self.frame_central = self.crear_frame_central()
 
         #? Titulo

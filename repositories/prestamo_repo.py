@@ -1,18 +1,10 @@
-from repositories.conexion import obtener_conexion
+# repositories/prestamo_repository.py
 from datetime import date
+from repositories.base_repository import BaseRepository
 
+class PrestamoRepo(BaseRepository):
 
-def listar_prestamos(solo_vencidos=False):
-    conexion = obtener_conexion()
-
-    if conexion is None:
-        raise ConnectionError("No se pudo conectar a MySQL")
-
-    cursor = None
-
-    try:
-        cursor = conexion.cursor()
-
+    def listar_prestamos(self, solo_vencidos=False):
         consulta = """
             SELECT
                 p.id_prestamo,
@@ -27,55 +19,19 @@ def listar_prestamos(solo_vencidos=False):
                 ) AS libro,
                 p.fecha_devolucion_estimada AS vence,
                 p.estado
-
             FROM prestamo p
-
-            JOIN socio s
-                ON p.id_socio = s.id_socio
-
-            LEFT JOIN detalle_prestamo dp
-                ON p.id_prestamo = dp.id_prestamo
-
-            LEFT JOIN libro l
-                ON dp.id_libro = l.id_libro
+            JOIN socio s ON p.id_socio = s.id_socio
+            LEFT JOIN detalle_prestamo dp ON p.id_prestamo = dp.id_prestamo
+            LEFT JOIN libro l ON dp.id_libro = l.id_libro
             WHERE (
-                %s = 0
-                OR (
-                    p.estado = 'activo'
-                    AND p.fecha_devolucion_estimada < %s
-                )
+                %s = 0 OR (p.estado = 'activo' AND p.fecha_devolucion_estimada < %s)
             )
-            GROUP BY
-                p.id_prestamo,
-                s.nombre,
-                s.apellido,
-                p.fecha_devolucion_estimada,
-                p.estado
-
+            GROUP BY p.id_prestamo, s.nombre, s.apellido, p.fecha_devolucion_estimada, p.estado
             ORDER BY p.fecha_devolucion_estimada
         """
+        return self._ejecutar_consulta(consulta, (int(solo_vencidos), date.today()), dictionary=False)
 
-        cursor.execute(consulta, (int(solo_vencidos), date.today()))
-        return cursor.fetchall()
-
-    finally:
-        if cursor is not None:
-            cursor.close()
-        conexion.close()
-
-
-
-def devolver_prestamo(id_prestamo):
-    conexion = obtener_conexion()
-
-    if conexion is None:
-        raise ConnectionError("No se pudo conectar a MySQL")
-
-    cursor = None
-
-    try:
-        cursor = conexion.cursor()
-
+    def devolver_prestamo(self, id_prestamo):
         consulta = """
             UPDATE prestamo
             SET estado = 'devuelto',
@@ -84,18 +40,5 @@ def devolver_prestamo(id_prestamo):
               AND estado = 'activo'
               AND fecha_prestamo <= CURDATE()
         """
-
-        cursor.execute(consulta, (id_prestamo,))
-        actualizado = cursor.rowcount > 0
-
-        conexion.commit()
-        return actualizado
-
-    except Exception:
-        conexion.rollback()
-        raise
-
-    finally:
-        if cursor is not None:
-            cursor.close()
-        conexion.close()
+        resultado = self._ejecutar_escritura(consulta, (id_prestamo,))
+        return resultado["rowcount"] > 0

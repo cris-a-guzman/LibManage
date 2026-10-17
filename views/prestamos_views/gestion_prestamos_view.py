@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from views.components.base_frame import BaseFrame
-from repositories.prestamo_repo import listar_prestamos, devolver_prestamo
 
 class GestionPrestamos(BaseFrame):
 
@@ -81,7 +80,7 @@ class GestionPrestamos(BaseFrame):
         # ]
 
         #? Traer prestamos de la base de datos
-        self.prestamos_datos = listar_prestamos()
+        self.prestamos_datos = self.ApiPrestamos.listar_prestamos()
         self.actualizar_tabla(self.prestamos_datos)
 
     
@@ -89,7 +88,7 @@ class GestionPrestamos(BaseFrame):
         nuevo_estado = not self.solo_vencidos
 
         try:
-            datos = listar_prestamos(
+            datos = self.ApiPrestamos.listar_prestamos(
                 solo_vencidos=nuevo_estado
             )
 
@@ -164,7 +163,7 @@ class GestionPrestamos(BaseFrame):
             return
 
         try:
-            resultado = devolver_prestamo(id_prestamo)
+            resultado = self.ApiPrestamos.devolver_prestamo(id_prestamo)
 
             if not resultado:
                 messagebox.showwarning(
@@ -174,7 +173,7 @@ class GestionPrestamos(BaseFrame):
                 return
 
             # Volver a consultar MySQL para actualizar la tabla
-            self.prestamos_datos = listar_prestamos(
+            self.prestamos_datos = self.ApiPrestamos.listar_prestamos(
                 solo_vencidos=self.solo_vencidos
             ) 
             self.actualizar_tabla(self.prestamos_datos)
