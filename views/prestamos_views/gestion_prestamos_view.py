@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from views.components.base_frame import BaseFrame
+from repositories.prestamo_repo import listar_prestamos
 
 class GestionPrestamos(BaseFrame):
 
@@ -62,6 +63,8 @@ class GestionPrestamos(BaseFrame):
             command=self.marcar_devuelto,
         )
         self.btn_devolver.pack(side="right", padx=5)
+        
+        self.btn_devolver.config(state="disabled")
 
         #? Boton Crear (Registrar prestamo)
         self.crear_boton_crear("Registrar Prestamo", self.registrar_prestamo)
@@ -70,10 +73,13 @@ class GestionPrestamos(BaseFrame):
         self.crear_boton_volver(self.volver_atras)
         
         #! Ejemplo de datos
-        self.prestamos_datos = [
-            (1, "Juan Perez", "1984", "12/09"),
-            (2, "Lucia Diaz", "Rayuela", "02/09"),
-        ]
+        # self.prestamos_datos = [
+        #     (1, "Juan Perez", "1984", "12/09"),
+        #     (2, "Lucia Diaz", "Rayuela", "02/09"),
+        # ]
+
+        #? Traer prestamos de la base de datos
+        self.prestamos_datos = listar_prestamos()
         self.actualizar_tabla(self.prestamos_datos)
 
     def filtrar(self):
