@@ -15,7 +15,7 @@ class HomeView(BaseFrame):
         #? Asi deberia ser cuando tengamos la conexion a la db
         
         datos_libro = [
-            ("Cantidad de Libros:", len(self.API.traer_libros())),
+            ("Cantidad de Libros:", self.ApiLibros.obtener_total_ejemplares()),
             ("Libros Prestados:", len(self.API.traer_libros_prestados())),
             ("Libros Disponibles:", len(self.API.traer_libros_prestados())-10),
         ]

@@ -2,6 +2,25 @@
 from repositories.base_repository import BaseRepository
 
 class LibroRepo(BaseRepository):
+    
+    def obtener_titulos_ids(self):
+        consulta = """
+            SELECT titulo, id_libro
+            FROM libro
+            WHERE fecha_baja IS NULL
+        """
+        
+        return self._ejecutar_consulta(consulta)
+        
+    
+    def obtener_total_ejemplares(self):
+        consulta = """
+            SELECT COALESCE(SUM(cantidad_total), 0) AS total 
+            FROM libro 
+            WHERE fecha_baja IS NULL
+        """
+        resultado = self._ejecutar_consulta(consulta, fetchone=True)
+        return resultado["total"] if resultado else 0
 
     def listar_libros(self):
         consulta = """

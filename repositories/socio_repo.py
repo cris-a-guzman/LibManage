@@ -2,6 +2,16 @@
 from repositories.base_repository import BaseRepository
 
 class SociosRepo(BaseRepository):
+    
+    def obtener_socios_dni(self):
+        consulta = """
+            SELECT dni
+            FROM socio
+            WHERE fecha_baja IS NULL
+            ORDER BY dni DESC
+        """        
+        return [i['dni'] for i in self._ejecutar_consulta(consulta)]
+        
 
     def listar_socios(self):
         consulta = """
