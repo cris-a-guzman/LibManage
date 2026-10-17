@@ -7,7 +7,8 @@ class GestionPrestamos(BaseFrame):
 
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
-        self.controller = controller      
+        self.controller = controller
+        self.solo_vencidos = False   
 
 
         # ?--- Frame Central
@@ -45,6 +46,9 @@ class GestionPrestamos(BaseFrame):
         #? Boton Filtrar
         self.crear_boton_filtrar(self.filtrar)
 
+        #? Boton Solo Vencidos
+        self.btn_filtros.config(text="Solo vencidos")
+
         #? --- Tabla de Prestamos
         columnas = ("id", "socio", "libro", "vence", "estado")
         ancho = (40, 140, 180, 90, 100)
@@ -80,8 +84,32 @@ class GestionPrestamos(BaseFrame):
         self.prestamos_datos = listar_prestamos()
         self.actualizar_tabla(self.prestamos_datos)
 
+    
     def filtrar(self):
-        print("Filtrando")
+        nuevo_estado = not self.solo_vencidos
+
+        try:
+            datos = listar_prestamos(
+                solo_vencidos=nuevo_estado
+            )
+
+        except Exception as error:
+            messagebox.showerror(
+                "Error",
+                f"No se pudieron filtrar los préstamos: {error}"
+            )
+            return
+
+        self.solo_vencidos = nuevo_estado
+        self.prestamos_datos = datos
+
+        self.busqueda.delete(0, tk.END)
+        self.actualizar_tabla(self.prestamos_datos)
+
+        if self.solo_vencidos:
+            self.btn_filtros.config(text="Mostrar todos")
+        else:
+            self.btn_filtros.config(text="Solo vencidos")
 
     def actualizar_tabla(self, lista_prestamos):
         """Limpia y vuelve a cargar los datos en la tabla."""
@@ -146,7 +174,9 @@ class GestionPrestamos(BaseFrame):
                 return
 
             # Volver a consultar MySQL para actualizar la tabla
-            self.prestamos_datos = listar_prestamos()
+            self.prestamos_datos = listar_prestamos(
+                solo_vencidos=self.solo_vencidos
+            ) 
             self.actualizar_tabla(self.prestamos_datos)
 
             messagebox.showinfo(

@@ -1,7 +1,8 @@
 from repositories.conexion import obtener_conexion
+from datetime import date
 
 
-def listar_prestamos():
+def listar_prestamos(solo_vencidos=False):
     conexion = obtener_conexion()
 
     if conexion is None:
@@ -37,7 +38,13 @@ def listar_prestamos():
 
             LEFT JOIN libro l
                 ON dp.id_libro = l.id_libro
-
+            WHERE (
+                %s = 0
+                OR (
+                    p.estado = 'activo'
+                    AND p.fecha_devolucion_estimada < %s
+                )
+            )
             GROUP BY
                 p.id_prestamo,
                 s.nombre,
@@ -48,7 +55,7 @@ def listar_prestamos():
             ORDER BY p.fecha_devolucion_estimada
         """
 
-        cursor.execute(consulta)
+        cursor.execute(consulta, (int(solo_vencidos), date.today()))
         return cursor.fetchall()
 
     finally:
