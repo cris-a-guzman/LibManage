@@ -1,12 +1,14 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from views.components.base_frame import BaseFrame
+from repositories.prestamo_repo import listar_prestamos, devolver_prestamo
 
 class GestionPrestamos(BaseFrame):
 
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
-        self.controller = controller      
+        self.controller = controller
+        self.solo_vencidos = False   
 
 
         # ?--- Frame Central
@@ -44,9 +46,12 @@ class GestionPrestamos(BaseFrame):
         #? Boton Filtrar
         self.crear_boton_filtrar(self.filtrar)
 
+        #? Boton Solo Vencidos
+        self.btn_filtros.config(text="Solo vencidos")
+
         #? --- Tabla de Prestamos
-        columnas = ("id", "socio", "libro", "vence")
-        ancho = (40,140,140,80)
+        columnas = ("id", "socio", "libro", "vence", "estado")
+        ancho = (40, 140, 180, 90, 100)
         self.crear_treeview(self.frame_central, columnas, ancho)
 
         # --- Botones de Acción (Inferiores)
@@ -70,14 +75,41 @@ class GestionPrestamos(BaseFrame):
         self.crear_boton_volver(self.volver_atras)
         
         #! Ejemplo de datos
-        self.prestamos_datos = [
-            (1, "Juan Perez", "1984", "12/09"),
-            (2, "Lucia Diaz", "Rayuela", "02/09"),
-        ]
+        # self.prestamos_datos = [
+        #     (1, "Juan Perez", "1984", "12/09"),
+        #     (2, "Lucia Diaz", "Rayuela", "02/09"),
+        # ]
+
+        #? Traer prestamos de la base de datos
+        self.prestamos_datos = listar_prestamos()
         self.actualizar_tabla(self.prestamos_datos)
 
+    
     def filtrar(self):
-        print("Filtrando")
+        nuevo_estado = not self.solo_vencidos
+
+        try:
+            datos = listar_prestamos(
+                solo_vencidos=nuevo_estado
+            )
+
+        except Exception as error:
+            messagebox.showerror(
+                "Error",
+                f"No se pudieron filtrar los préstamos: {error}"
+            )
+            return
+
+        self.solo_vencidos = nuevo_estado
+        self.prestamos_datos = datos
+
+        self.busqueda.delete(0, tk.END)
+        self.actualizar_tabla(self.prestamos_datos)
+
+        if self.solo_vencidos:
+            self.btn_filtros.config(text="Mostrar todos")
+        else:
+            self.btn_filtros.config(text="Solo vencidos")
 
     def actualizar_tabla(self, lista_prestamos):
         """Limpia y vuelve a cargar los datos en la tabla."""
@@ -109,26 +141,55 @@ class GestionPrestamos(BaseFrame):
         prestamos_ordenados = sorted(self.prestamos_datos, key=lambda x: x[3])
         self.actualizar_tabla(prestamos_ordenados)
 
+    
     def marcar_devuelto(self):
-        """Elimina de la lista el prestamo seleccionado (ya devuelto)."""
         seleccion = self.tabla.selection()
+
         if not seleccion:
-            tk.messagebox.showwarning(
-                "Atención", "Por favor, selecciona un préstamo de la lista."
+            messagebox.showwarning(
+                "Atención",
+                "Seleccioná un préstamo."
             )
             return
 
-        item = self.tabla.item(seleccion)
-        prestamo_id = item["values"][0]
-        if tk.messagebox.askyesno("Confirmar", "¿Deseas finalizar este Prestamo?"):
-            #! Aca va la logica para devolverlo
-            tk.messagebox.showinfo(title="Operacion Exitosa", message="Prestamo finalizado exitosamente.")
-        else:
+        item = self.tabla.item(seleccion[0])
+        id_prestamo = int(item["values"][0])
+
+        confirmar = messagebox.askyesno(
+            "Confirmar devolución",
+            f"¿Confirmás la devolución del préstamo {id_prestamo}?"
+        )
+
+        if not confirmar:
             return
-        self.prestamos_datos = [
-            p for p in self.prestamos_datos if p[0] != prestamo_id
-        ]
-        self.actualizar_tabla(self.prestamos_datos)
+
+        try:
+            resultado = devolver_prestamo(id_prestamo)
+
+            if not resultado:
+                messagebox.showwarning(
+                    "Atención",
+                    "El préstamo no está activo o no puede devolverse."
+                )
+                return
+
+            # Volver a consultar MySQL para actualizar la tabla
+            self.prestamos_datos = listar_prestamos(
+                solo_vencidos=self.solo_vencidos
+            ) 
+            self.actualizar_tabla(self.prestamos_datos)
+
+            messagebox.showinfo(
+                "Devolución registrada",
+                "El préstamo fue devuelto correctamente."
+            )
+
+        except Exception as error:
+            messagebox.showerror(
+                "Error",
+                f"No se pudo registrar la devolución: {error}"
+            )
+
 
     def registrar_prestamo(self):
         from views.prestamos_views.registrar_prestamo_view import RegistrarPrestamo

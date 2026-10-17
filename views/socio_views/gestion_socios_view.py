@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from views.components.base_frame import BaseFrame
+from repositories.socio_repo import listar_socios
 
 class GestionSocios(BaseFrame):
     def __init__(self, parent, controller):
@@ -8,7 +9,10 @@ class GestionSocios(BaseFrame):
         self.controller = controller
 
         #! Datos de ejemplo para los socios
-        self.socios = self.API.traer_socios()
+        # self.socios = self.API.traer_socios()
+        #? Traer socios de la base de datos
+        self.socios = listar_socios()
+        print(self.socios)
 
         #? Frame Central
         self.frame_central.columnconfigure(0, weight=1) #? Esto tambien se podria refactorizar
