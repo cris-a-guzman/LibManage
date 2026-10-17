@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-
+from repositories.libro_repo import crear_libro, actualizar_libro
 
 class ModificarLibro(tk.Frame):
     def __init__(self, parent, controller, libro_datos=None):
@@ -93,10 +93,66 @@ class ModificarLibro(tk.Frame):
             entry.delete(0, tk.END)
             entry.insert(0, valor)
 
+    
     def guardar_cambios(self):
+        # Recuperar los datos del formulario
+        titulo = self.txt_titulo.get().strip()
+        autor = self.txt_autor.get().strip()
+        anio = self.txt_anio.get().strip()
+        cantidad = self.txt_cantidad.get().strip()
+
+        # Validar campos obligatorios
+        if titulo in ("", "Titulo del Libro") or autor in ("", "Autor"):
+            messagebox.showwarning(
+                "Datos incompletos",
+                "El título y el autor son obligatorios."
+            )
+            return
+
+        # Validar los valores numéricos
+        try:
+            anio = None if anio in ("", "Año") else int(anio)
+            cantidad = int(cantidad)
+
+            if (anio is not None and anio <= 0) or cantidad < 0:
+                raise ValueError
+
+        except ValueError:
+            messagebox.showwarning(
+                "Datos inválidos",
+                "Ingresá un año válido y una cantidad entera no negativa."
+            )
+            return
+
+        # Guardar en MySQL
+        try:
+            if self.libro_datos:
+                actualizar_libro(
+                    self.libro_datos["id_libro"],
+                    titulo,
+                    autor,
+                    anio,
+                    cantidad
+                )
+                mensaje = "Libro modificado correctamente."
+            else:
+                nuevo_id = crear_libro(titulo, autor, anio, cantidad)
+                mensaje = f"Libro creado correctamente con ID {nuevo_id}."
+
+        except Exception as error:
+            messagebox.showerror(
+                "Error al guardar",
+                f"No se pudo guardar el libro: {error}"
+            )
+            return
+
+        # Confirmar al usuario
+        messagebox.showinfo("Operación exitosa", mensaje)
+
+        # Regresar al listado
         from views.libros_views.gestion_libros_view import GestionLibros
-        messagebox.showinfo(title="Libro Guardado", message="Libro guardado exitosamente.")
         self.controller.show_frame(GestionLibros)
+
 
     def descartar(self):
         from views.libros_views.gestion_libros_view import GestionLibros
