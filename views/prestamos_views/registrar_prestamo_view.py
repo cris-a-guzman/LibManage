@@ -15,8 +15,14 @@ class RegistrarPrestamo(BaseFrame):
 
         # Carga de datos desde la API/Repositories
         self.dni_socios = self.ApiSocios.obtener_socios_dni()
-        self.titulos_ids_libros = self.ApiLibros.obtener_titulos_ids()
+        self.libros_catalogo = self.ApiLibros.obtener_disponibilidad_libros()
 
+        self.opciones_libros = {
+            f"[{int(libro['disponibles'])} disponibles] "
+            f"{libro['titulo']} (ID {libro['id_libro']})": libro
+            for libro in self.libros_catalogo
+            if libro["disponibles"] > 0
+        }
         self.socio_seleccionado = None
         self.libro_seleccionado = None
         self.libros_seleccionados = {}
@@ -68,12 +74,12 @@ class RegistrarPrestamo(BaseFrame):
             self.frame_central, text="Buscar libro por TÍTULO:"
         ).grid(row=3, column=0, sticky="w", pady=(5, 0))
 
-        titulos = [x["titulo"] for x in self.titulos_ids_libros]
-
         self.combo_libro = AutocompleteCombobox(
             self.frame_central, width=30, font=("Arial", 10)
         )
-        self.combo_libro.set_completion_list(titulos)
+        self.combo_libro.set_completion_list(
+            list(self.opciones_libros.keys())
+        )        
         self._configurar_placeholder(self.combo_libro, "Escribir título...")
         self.combo_libro.grid(row=4, column=0, sticky="ew", ipady=5, pady=(0, 5))
         self.combo_libro.bind("<<ComboboxSelected>>", self.al_seleccionar_libro)
@@ -168,7 +174,7 @@ class RegistrarPrestamo(BaseFrame):
         # --- Fecha de préstamo (automática)
         tk.Label(
             self.frame_central, text="Fecha de préstamo (Automática)"
-        ).grid(row=6, column=0, sticky="w", pady=(5, 0))
+        ).grid(row=7, column=0, sticky="w", pady=(5, 0))
 
         self.lbl_fecha_prestamo = tk.Label(
             self.frame_central,
@@ -178,22 +184,22 @@ class RegistrarPrestamo(BaseFrame):
             relief="solid",
             pady=8,
         )
-        self.lbl_fecha_prestamo.grid(row=7, column=0, sticky="ew", pady=(0, 10))
+        self.lbl_fecha_prestamo.grid(row=8, column=0, sticky="ew", pady=(0, 10))
 
         # --- Fecha de devolución estimada
         tk.Label(
             self.frame_central, text="Fecha de devolución estimada"
-        ).grid(row=8, column=0, sticky="w", pady=(5, 0))
+        ).grid(row=9, column=0, sticky="w", pady=(5, 0))
 
         self.entry_fecha_devolucion = tk.Entry(self.frame_central, justify="center")
         self._configurar_placeholder(self.entry_fecha_devolucion, "dd/mm/aaaa")
         self.entry_fecha_devolucion.grid(
-            row=9, column=0, sticky="ew", ipady=5, pady=(0, 15)
+            row=10, column=0, sticky="ew", ipady=5, pady=(0, 15)
         )
 
         # --- Botones Confirmar / Cancelar
         self.frame_botones = tk.Frame(self.frame_central)
-        self.frame_botones.grid(row=10, column=0, sticky="ew")
+        self.frame_botones.grid(row=11, column=0, sticky="ew")
         self.frame_botones.columnconfigure(0, weight=1)
         self.frame_botones.columnconfigure(1, weight=1)
 
@@ -231,18 +237,23 @@ class RegistrarPrestamo(BaseFrame):
             )
 
     def al_seleccionar_libro(self, event):
-        titulo_ingresado = self.combo_libro.get().strip()
-        if titulo_ingresado and titulo_ingresado != "Escribir título...":
-            # Buscamos el objeto/ID correspondiente en la lista traída del repo
-            libro_encontrado = next(
-                (item for item in self.titulos_ids_libros if item["titulo"] == titulo_ingresado),
-                None,
-            )
-            if libro_encontrado:
-                self.libro_seleccionado = libro_encontrado
-                self.lbl_libro_seleccionado.config(
-                    text=f"Libro Seleccionado: {libro_encontrado['titulo']}", bg="#d9f2d9"
-                )
+        opcion = self.combo_libro.get().strip()
+
+        libro = self.opciones_libros.get(opcion)
+
+        if libro is None:
+            self.libro_seleccionado = None
+            return
+
+        self.libro_seleccionado = libro
+
+        self.lbl_libro_seleccionado.config(
+            text=(
+                f"Libro: {libro['titulo']} — "
+                f"{int(libro['disponibles'])} disponibles"
+            ),
+            bg="#d9f2d9"
+        )
 
     def agregar_libro(self):
         libro = self.libro_seleccionado
@@ -255,7 +266,9 @@ class RegistrarPrestamo(BaseFrame):
             return
 
         # Evitar agregar un título distinto del seleccionado
-        if self.combo_libro.get().strip() != libro["titulo"]:
+        if self.opciones_libros.get(
+            self.combo_libro.get().strip()
+        ) is not libro:
             messagebox.showwarning(
                 "Atención",
                 "Seleccioná nuevamente el libro."
@@ -267,6 +280,14 @@ class RegistrarPrestamo(BaseFrame):
 
             if cantidad <= 0:
                 raise ValueError
+            
+            if cantidad > libro["disponibles"]:
+                messagebox.showwarning(
+                    "Sin disponibilidad suficiente",
+                    f"Solo hay {int(libro['disponibles'])} "
+                    "ejemplares disponibles de este libro."
+                )
+                return
 
         except ValueError:
             messagebox.showwarning(

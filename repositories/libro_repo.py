@@ -55,3 +55,36 @@ class LibroRepo(BaseRepository):
         """
         resultado = self._ejecutar_escritura(consulta, (id_libro,))
         return resultado["rowcount"] > 0
+    
+    def obtener_disponibilidad_libros(self):
+        consulta = """
+            SELECT
+                l.id_libro,
+                l.titulo,
+                l.cantidad_total,
+                l.cantidad_total - COALESCE(
+                    SUM(
+                        CASE
+                            WHEN p.estado IN (
+                                'activo',
+                                'cerrado_sin_devolver'
+                            )
+                            THEN dp.cantidad
+                            ELSE 0
+                        END
+                    ), 0
+                ) AS disponibles
+            FROM libro l
+            LEFT JOIN detalle_prestamo dp
+                ON dp.id_libro = l.id_libro
+            LEFT JOIN prestamo p
+                ON p.id_prestamo = dp.id_prestamo
+            WHERE l.fecha_baja IS NULL
+            GROUP BY
+                l.id_libro,
+                l.titulo,
+                l.cantidad_total
+            ORDER BY l.titulo
+        """
+
+        return self._ejecutar_consulta(consulta)
