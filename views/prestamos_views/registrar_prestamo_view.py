@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import ttk,messagebox
 from datetime import date, datetime
 from views.components.lista_desplegable import AutocompleteCombobox
 from views.components.base_frame import BaseFrame
@@ -19,6 +19,7 @@ class RegistrarPrestamo(BaseFrame):
 
         self.socio_seleccionado = None
         self.libro_seleccionado = None
+        self.libros_seleccionados = {}
 
         # Configuración del grid del contenedor principal
         self.rowconfigure(0, weight=0)
@@ -86,6 +87,83 @@ class RegistrarPrestamo(BaseFrame):
             pady=8,
         )
         self.lbl_libro_seleccionado.grid(row=5, column=0, sticky="ew", pady=(0, 10))
+
+        # --- Libros incluidos en el préstamo
+        self.frame_libros = tk.LabelFrame(
+            self.frame_central,
+            text="Libros del préstamo",
+            padx=10,
+            pady=10
+        )
+        self.frame_libros.grid(
+            row=6, column=0, sticky="ew", pady=10
+        )
+        self.frame_libros.columnconfigure(0, weight=1)
+
+        # Controles para agregar ejemplares
+        self.controles_libros = tk.Frame(self.frame_libros)
+        self.controles_libros.grid(
+            row=0, column=0, columnspan=2, sticky="w"
+        )
+
+        tk.Label(
+            self.controles_libros,
+            text="Cantidad:"
+        ).pack(side="left", padx=5)
+
+        self.cantidad_libro = tk.Spinbox(
+            self.controles_libros,
+            from_=1,
+            to=999,
+            width=5
+        )
+        self.cantidad_libro.pack(side="left", padx=5)
+
+        self.btn_agregar_libro = tk.Button(
+            self.controles_libros,
+            text="Agregar libro",
+            command=self.agregar_libro
+        )
+        self.btn_agregar_libro.pack(side="left", padx=5)
+
+        # Tabla de libros seleccionados
+        self.tabla_libros = ttk.Treeview(
+            self.frame_libros,
+            columns=("titulo", "cantidad"),
+            show="headings",
+            height=4,
+            selectmode="browse"
+        )
+
+        self.tabla_libros.heading("titulo", text="Libro")
+        self.tabla_libros.heading("cantidad", text="Cantidad")
+
+        self.tabla_libros.column("titulo", width=260)
+        self.tabla_libros.column("cantidad", width=80)
+
+        self.tabla_libros.grid(
+            row=1, column=0, sticky="ew", pady=10
+        )
+
+        barra_libros = ttk.Scrollbar(
+            self.frame_libros,
+            orient="vertical",
+            command=self.tabla_libros.yview
+        )
+        barra_libros.grid(row=1, column=1, sticky="ns")
+
+        self.tabla_libros.configure(
+            yscrollcommand=barra_libros.set
+        )
+
+        self.btn_quitar_libro = tk.Button(
+            self.frame_libros,
+            text="Quitar seleccionado",
+            command=self.quitar_libro
+        )
+        self.btn_quitar_libro.grid(
+            row=2, column=0, sticky="e"
+        )
 
         # --- Fecha de préstamo (automática)
         tk.Label(
@@ -166,33 +244,114 @@ class RegistrarPrestamo(BaseFrame):
                     text=f"Libro Seleccionado: {libro_encontrado['titulo']}", bg="#d9f2d9"
                 )
 
-    
-    def confirmar_prestamo(self): #! Refactorizar
-        if not self.socio_seleccionado or not self.libro_seleccionado:
+    def agregar_libro(self):
+        libro = self.libro_seleccionado
+
+        if not libro:
             messagebox.showwarning(
                 "Atención",
-                "Seleccioná un socio y un libro."
+                "Primero seleccioná un libro."
             )
             return
 
-        # Comprobar que no se modificaron los campos tras seleccionar
-        if (
-            self.combo_dni_socio.get().strip() != self.socio_seleccionado
-            or self.combo_libro.get().strip()
-            != self.libro_seleccionado["titulo"]
-        ):
+        # Evitar agregar un título distinto del seleccionado
+        if self.combo_libro.get().strip() != libro["titulo"]:
             messagebox.showwarning(
                 "Atención",
-                "Volvé a seleccionar un socio y un libro válidos."
+                "Seleccioná nuevamente el libro."
             )
             return
-
-        # Validar la fecha ingresada
-        fecha_texto = self.entry_fecha_devolucion.get().strip()
 
         try:
+            cantidad = int(self.cantidad_libro.get())
+
+            if cantidad <= 0:
+                raise ValueError
+
+        except ValueError:
+            messagebox.showwarning(
+                "Cantidad inválida",
+                "Ingresá una cantidad entera mayor que cero."
+            )
+            return
+
+        id_libro = libro["id_libro"]
+
+        if id_libro in self.libros_seleccionados:
+            messagebox.showwarning(
+                "Libro repetido",
+                "Este libro ya está agregado. "
+                "Quitalo si querés cambiar su cantidad."
+            )
+            return
+
+        # Guardar la selección en memoria
+        self.libros_seleccionados[id_libro] = {
+            "titulo": libro["titulo"],
+            "cantidad": cantidad
+        }
+
+        # Mostrarla en el Treeview
+        self.tabla_libros.insert(
+            "",
+            "end",
+            iid=str(id_libro),
+            values=(libro["titulo"], cantidad)
+        )
+
+        # Preparar el formulario para otro libro
+        self.combo_libro.set("")
+        self.libro_seleccionado = None
+        self.cantidad_libro.delete(0, tk.END)
+        self.cantidad_libro.insert(0, "1")
+
+        self.lbl_libro_seleccionado.config(
+            text="Ningún libro seleccionado",
+            bg="#f0f0f0"
+        )
+
+    def quitar_libro(self):
+        seleccion = self.tabla_libros.selection()
+
+        if not seleccion:
+            messagebox.showwarning(
+                "Atención",
+                "Seleccioná un libro para quitarlo."
+            )
+            return
+
+        id_libro = int(seleccion[0])
+
+        self.libros_seleccionados.pop(id_libro, None)
+        self.tabla_libros.delete(seleccion[0])
+    
+    def confirmar_prestamo(self):
+        if not self.socio_seleccionado:
+            messagebox.showwarning(
+                "Atención",
+                "Seleccioná un socio."
+            )
+            return
+
+        if self.combo_dni_socio.get().strip() != self.socio_seleccionado:
+            messagebox.showwarning(
+                "Atención",
+                "Volvé a seleccionar un socio válido."
+            )
+            return
+
+        if not self.libros_seleccionados:
+            messagebox.showwarning(
+                "Atención",
+                "Agregá al menos un libro al préstamo."
+            )
+            return
+
+        # Validar la fecha
+        try:
             fecha_devolucion = datetime.strptime(
-                fecha_texto, "%d/%m/%Y"
+                self.entry_fecha_devolucion.get().strip(),
+                "%d/%m/%Y"
             ).date()
 
             if fecha_devolucion < date.today():
@@ -201,16 +360,20 @@ class RegistrarPrestamo(BaseFrame):
         except ValueError:
             messagebox.showwarning(
                 "Fecha inválida",
-                "Ingresá una fecha válida, igual o posterior a hoy, "
-                "con formato dd/mm/aaaa."
+                "Ingresá una fecha válida igual o posterior a hoy."
             )
             return
 
-        # Registrar el préstamo en MySQL
+        # Preparar los datos para el repositorio
+        libros = [
+            (id_libro, datos["cantidad"])
+            for id_libro, datos in self.libros_seleccionados.items()
+        ]
+
         try:
-            id_prestamo = self.ApiPrestamos.crear_prestamo(
+            id_prestamo = self.ApiPrestamos.crear_prestamo_multiple(
                 dni_socio=self.socio_seleccionado,
-                id_libro=self.libro_seleccionado["id_libro"],
+                libros=libros,
                 fecha_devolucion=fecha_devolucion
             )
 

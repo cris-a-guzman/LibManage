@@ -24,7 +24,9 @@ class GestionPrestamos(BaseFrame):
         
 
         #? --- Barra de busqueda
-        self.crear_barra_busqueda("Buscar Prestamo", self.buscar)
+        self.crear_barra_busqueda("Buscar préstamo", self.buscar)
+
+        self.busqueda.grid_configure(columnspan=1, padx=(0, 5))
 
         self.boton = tk.Button(
             self.frame_central, text="Buscar", command=self.buscar
@@ -55,17 +57,14 @@ class GestionPrestamos(BaseFrame):
 
         # --- Botones de Acción (Inferiores)
         self.frame_acciones = tk.Frame(self.frame_central)
-        self.frame_acciones.grid(
-            row=3, column=0, columnspan=2, sticky="ew", pady=5
-        )
+        self.frame_acciones.grid(row=3, column=0, columnspan=2, sticky="ew", pady=5)
         self.frame_acciones.columnconfigure(0, weight=1)
 
-        self.btn_devolver = tk.Button(
-            self.frame_acciones,
-            text="devolver",
-            command=self.marcar_devuelto,
-        )
+        self.btn_devolver = tk.Button(self.frame_acciones, text="devolver", command=self.marcar_devuelto, )
         self.btn_devolver.pack(side="right", padx=5)
+        self.btn_devolver.config(state="disabled")
+
+        self.tabla.bind("<<TreeviewSelect>>", self.actualizar_boton_devolver)
 
         #? Boton Crear (Registrar prestamo)
         self.crear_boton_crear("Registrar Prestamo", self.registrar_prestamo)
@@ -116,6 +115,24 @@ class GestionPrestamos(BaseFrame):
             self.tabla.delete(item)
         for prestamo in lista_prestamos:
             self.tabla.insert("", "end", values=prestamo)
+
+        self.actualizar_boton_devolver()
+
+
+    def actualizar_boton_devolver(self, event=None):
+        seleccion = self.tabla.selection()
+
+        if not seleccion:
+            self.btn_devolver.config(state="disabled")
+            return
+
+        valores = self.tabla.item(seleccion[0], "values")
+        estado = str(valores[4]).strip().lower()
+
+        if estado == "activo":
+            self.btn_devolver.config(state="normal")
+        else:
+            self.btn_devolver.config(state="disabled")
 
     def buscar(self, event=None):
         """Filtra la lista de prestamos según lo ingresado."""
