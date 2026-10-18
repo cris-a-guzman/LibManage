@@ -5,6 +5,7 @@ from views.components.lista_desplegable import AutocompleteCombobox
 from views.components.base_frame import BaseFrame
 from views.components.formulario_desplazable import FormularioDesplazable
 
+#! Se puede refactorizar
 
 class RegistrarPrestamo(BaseFrame):
 
@@ -166,7 +167,7 @@ class RegistrarPrestamo(BaseFrame):
                 )
 
     
-    def confirmar_prestamo(self):
+    def confirmar_prestamo(self): #! Refactorizar
         if not self.socio_seleccionado or not self.libro_seleccionado:
             messagebox.showwarning(
                 "Atención",
