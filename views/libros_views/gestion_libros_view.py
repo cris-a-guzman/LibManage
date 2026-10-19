@@ -20,6 +20,7 @@ class GestionLibros(BaseFrame):
 
         self.frame_central.columnconfigure(0, weight=1)
         self.frame_central.columnconfigure(1, weight=1) #? Esto tambien se podria refactorizar
+        
         self.frame_central.rowconfigure(2, weight=1)
 
         #? Barra de busqueda
@@ -47,9 +48,8 @@ class GestionLibros(BaseFrame):
         
         self.frame_inferior.columnconfigure(2, weight=1)
 
-
         #? Boton Crear Libro
-        self.crear_boton_crear("Crear Libro", self.modificar_libro)
+        self.crear_boton_crear("Crear Libro", self.crear_libro)
 
         #? Boton Volver Atras
         self.crear_boton_volver(self.volver_atras)
@@ -102,6 +102,10 @@ class GestionLibros(BaseFrame):
     def filtrar(self):
         self.busqueda.delete(0, tk.END)
         self.actualizar_tabla(self.libros_datos)
+        
+    def crear_libro(self):
+        from views.libros_views.crear_libro_view import CrearLibro
+        self.controller.show_frame(CrearLibro)
 
     def modificar_seleccionado(self):
         seleccion = self.tabla.selection()
