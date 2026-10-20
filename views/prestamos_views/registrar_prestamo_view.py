@@ -5,8 +5,6 @@ from views.components.lista_desplegable import AutocompleteCombobox
 from views.components.base_frame import BaseFrame
 from views.components.formulario_desplazable import FormularioDesplazable
 
-#! Se puede refactorizar
-
 class RegistrarPrestamo(BaseFrame):
 
     def __init__(self, parent, controller):
@@ -411,7 +409,6 @@ class RegistrarPrestamo(BaseFrame):
         )
 
         self.cancelar()
-
 
     def cancelar(self):
         from views.prestamos_views.gestion_prestamos_view import GestionPrestamos

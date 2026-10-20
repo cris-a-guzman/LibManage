@@ -6,10 +6,7 @@ class GestionLibros(BaseFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         self.controller = controller
-
-        #? Datos de prueba con los mismos campos que la tabla libro de la BD
-        # self.libros_datos = self.API.traer_libros()
-        #? Frame principal
+            #? Frame principal
         
         # ? Traer libros de la base de datos
         self.libros_datos = self.ApiLibros.listar_libros()
@@ -17,9 +14,7 @@ class GestionLibros(BaseFrame):
 
         #? Titulo
         self.crear_titulo("Gestion de Libro")
-
-        self.frame_central.columnconfigure(0, weight=1)
-        self.frame_central.columnconfigure(1, weight=1) #? Esto tambien se podria refactorizar
+        self.frame_central.columnconfigure((0,1), weight=1)
         self.frame_central.rowconfigure(2, weight=1)
 
         #? Barra de busqueda
@@ -43,10 +38,10 @@ class GestionLibros(BaseFrame):
         self.crear_treeview(self.frame_libros, columnas,ancho, modo)
 
         #? Doble clic sobre una fila = modificar ese libro
+        #! A esto lo podriamos pasar al general creo
         self.tabla.bind("<Double-1>", lambda e: self.modificar_seleccionado())
         
         self.frame_inferior.columnconfigure(2, weight=1)
-
 
         #? Boton Crear Libro
         self.crear_boton_crear("Crear Libro", self.modificar_libro)
@@ -63,6 +58,7 @@ class GestionLibros(BaseFrame):
         btn_modificar.grid(row=0, column=2, sticky="ew", padx=(10,10), pady=(10, 0), ipady=6)
 
         self.actualizar_tabla(self.libros_datos)
+        
     def actualizar_tabla(self, lista_libros):
         for item in self.tabla.get_children():
             self.tabla.delete(item)

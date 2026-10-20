@@ -14,32 +14,22 @@ class GestionPrestamos(BaseFrame):
         self.frame_central = self.crear_frame_central()
         self.frame_central.columnconfigure(0, weight=4)
         self.frame_central.columnconfigure(1, weight=1)
-        self.frame_central.rowconfigure(0, weight=0)
-        self.frame_central.rowconfigure(1, weight=0) #? Esto tambien se podria refactorizar
+        
+        self.frame_central.rowconfigure((0,1,3), weight=0)
         self.frame_central.rowconfigure(2, weight=1)
-        self.frame_central.rowconfigure(3, weight=0)
 
         #? -- TItulo
         self.crear_titulo("Gestion de Prestamos")
-        
 
         #? --- Barra de busqueda
         self.crear_barra_busqueda("Buscar préstamo", self.buscar)
 
         self.busqueda.grid_configure(columnspan=1, padx=(0, 5))
 
-        self.boton = tk.Button(
+        self.boton = tk.Button( #! se puede refactorizar
             self.frame_central, text="Buscar", command=self.buscar
         )
         self.boton.grid(row=0, column=1, sticky="ew", padx=5, pady=3)
-
-        #? --- Filtros y Ordenar
-        self.botones_filtros_frame = tk.Frame(self.frame_central)
-        self.botones_filtros_frame.grid(
-            row=1, column=0, columnspan=2, sticky="nsew", pady=5
-        )
-        self.botones_filtros_frame.columnconfigure(0, weight=1)
-        self.botones_filtros_frame.columnconfigure(1, weight=1)
 
         #? Boton Ordenar
         self.crear_boton_ordenar(self.ordenar)
@@ -71,12 +61,6 @@ class GestionPrestamos(BaseFrame):
         
         #? Boton Volver Atras
         self.crear_boton_volver(self.volver_atras)
-        
-        #! Ejemplo de datos
-        # self.prestamos_datos = [
-        #     (1, "Juan Perez", "1984", "12/09"),
-        #     (2, "Lucia Diaz", "Rayuela", "02/09"),
-        # ]
 
         #? Traer prestamos de la base de datos
         self.prestamos_datos = self.ApiPrestamos.listar_prestamos()
@@ -162,19 +146,13 @@ class GestionPrestamos(BaseFrame):
         seleccion = self.tabla.selection()
 
         if not seleccion:
-            messagebox.showwarning(
-                "Atención",
-                "Seleccioná un préstamo."
-            )
+            self.mensaje_advertencia("Atención", "Seleccioná un préstamo.")
             return
 
         item = self.tabla.item(seleccion[0])
         id_prestamo = int(item["values"][0])
 
-        confirmar = messagebox.askyesno(
-            "Confirmar devolución",
-            f"¿Confirmás la devolución del préstamo {id_prestamo}?"
-        )
+        confirmar = self.mensaje_confirmacion("Confirmar devolución", f"¿Confirmás la devolución del préstamo {id_prestamo}?")
 
         if not confirmar:
             return
@@ -183,10 +161,7 @@ class GestionPrestamos(BaseFrame):
             resultado = self.ApiPrestamos.devolver_prestamo(id_prestamo)
 
             if not resultado:
-                messagebox.showwarning(
-                    "Atención",
-                    "El préstamo no está activo o no puede devolverse."
-                )
+                self.mensaje_advertencia("Atención", "El préstamo no está activo o no puede devolverse.")
                 return
 
             # Volver a consultar MySQL para actualizar la tabla
@@ -195,10 +170,7 @@ class GestionPrestamos(BaseFrame):
             ) 
             self.actualizar_tabla(self.prestamos_datos)
 
-            messagebox.showinfo(
-                "Devolución registrada",
-                "El préstamo fue devuelto correctamente."
-            )
+            self.mensaje_info("Devolución registrada","El préstamo fue devuelto correctamente.")
 
         except Exception as error:
             messagebox.showerror(

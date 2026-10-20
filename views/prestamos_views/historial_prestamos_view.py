@@ -18,8 +18,7 @@ class HistorialPrestamosSocio(BaseFrame):
         self.frame_central = tk.Frame(self, bd=1, relief="solid", padx=15, pady=15)
         self.frame_central.grid(row=1, column=0, sticky="nsew", padx=10, pady=(5, 10))
 
-        self.frame_central.columnconfigure(0, weight=1)
-        self.frame_central.columnconfigure(1, weight=1)
+        self.frame_central.columnconfigure((0,1), weight=1)
         self.frame_central.rowconfigure(4, weight=1)
 
         #? --- Columna izquierda: Datos del socio

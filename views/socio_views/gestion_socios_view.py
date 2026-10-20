@@ -108,9 +108,8 @@ class GestionSocios(BaseFrame):
     def registrar_socio(self, socio=None):
         from views.socio_views.registrar_socio_view import RegistrarSocio
         self.controller.show_frame(RegistrarSocio, socio)
-        # Una vez con la conexion a la db debemos resolver lo de pasar Socio
         
-    def volver_atras(self): #! Esto lo podriamos pasar a controller me parece
+    def volver_atras(self):
         from views.home_view.home_view import HomeView
         self.controller.show_frame(HomeView)
     
