@@ -15,26 +15,10 @@ class ModificarLibro(BaseFrame):
         self.columnconfigure(0, weight=1)
 
         if libro_datos is not None:
-            self.titulo_label = tk.Label(
-                self, 
-                text=f"Modificar Libro: {self.libro_datos.get('titulo', '')}", 
-                font=("Arial", 14, "bold"),
-                bd=1, 
-                relief="solid", 
-                pady=8
-            )
-            self.titulo_label.grid(row=0, column=0, sticky="ew", padx=10, pady=(10, 5))
+            self.titulo = self.crear_titulo(f"Modificar Libro: {self.libro_datos.get('titulo', '')}")
         else:
-            self.titulo_label = tk.Label(
-                self, 
-                text="Crear Libro", 
-                font=("Arial", 14, "bold"),
-                bd=1, 
-                relief="solid", 
-                pady=8
-            )
+            self.titulo_label = self.crear_titulo("Crear Libro")
             
-            self.titulo_label.grid(row=0, column=0, sticky="ew", padx=10, pady=(10, 5))
         #? --- Frame Central
         self.scroll_formulario = FormularioDesplazable(
             self.frame_central
@@ -69,9 +53,7 @@ class ModificarLibro(BaseFrame):
         self.frame_botones = tk.Frame(self.frame_central)
         self.frame_botones.grid(row=1, column=0, sticky="ew", pady=(15, 0))
         
-        self.frame_botones.columnconfigure(0, weight=1)
-        self.frame_botones.columnconfigure(1, weight=1)
-        self.frame_botones.columnconfigure(2, weight=1)
+        self.frame_botones.columnconfigure((0,1,2), weight=1)
 
         #? Botones
         self.btn_guardar = tk.Button(
@@ -109,13 +91,13 @@ class ModificarLibro(BaseFrame):
             self.set_entry(self.txt_autor, self.libro_datos.get("autor", ""))
             self.set_entry(self.txt_anio, self.libro_datos.get("anio", ""))
             self.set_entry(self.txt_cantidad, self.libro_datos.get("cantidad_total", ""))
+            # self.set_entry(self.txt_isbn), self.libro_datos.get("isbn", "")
 
     def set_entry(self, entry, valor):
         if valor:
             entry.delete(0, tk.END)
             entry.insert(0, valor)
 
-    
     def guardar_cambios(self):
         # Recuperar los datos del formulario
         titulo = self.txt_titulo.get().strip()

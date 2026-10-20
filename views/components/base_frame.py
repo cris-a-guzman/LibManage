@@ -1,10 +1,11 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from database.database import ApiDatabase
 from repositories.conexion import obtener_conexion
 from repositories.libro_repo import LibroRepo
 from repositories.prestamo_repo import PrestamoRepo
 from repositories.socio_repo import SociosRepo
+
 class BaseFrame(tk.Frame):
     
     def __init__(self, parent, controller):
@@ -15,8 +16,6 @@ class BaseFrame(tk.Frame):
         self.ApiPrestamos = PrestamoRepo(self.conexion)
         self.ApiSocios = SociosRepo(self.conexion)
         
-        
-        #! Lo de abajo es un mock de los datos de los socios
         self.API = ApiDatabase()
         #? Configuración del grid principal de la pantalla
         
@@ -45,6 +44,7 @@ class BaseFrame(tk.Frame):
             pady=8
         )
         titulo_label.grid(row=0, column=0, sticky="new", padx=10, pady=(10, 5))
+        return titulo_label
         
     def crear_frame_central(self):
         self.frame_central = tk.Frame(self, bd=1, relief="solid")
@@ -120,3 +120,21 @@ class BaseFrame(tk.Frame):
 
         self.tabla.grid(row=0, column=0, sticky="nsew")
         scrollbar.grid(row=0, column=1, sticky="ns")
+
+    def mensaje_advertencia(self, titulo, mensaje):
+        messagebox.showwarning(
+                titulo,
+                mensaje
+            )
+        
+    def mensaje_confirmacion(self, titulo, mensaje):
+         return messagebox.askyesno(
+            titulo,
+            mensaje
+        )
+         
+    def mensaje_info(self, titulo, mensaje):
+        messagebox.showinfo(
+                titulo,
+                mensaje
+                    )

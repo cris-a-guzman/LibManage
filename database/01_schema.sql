@@ -97,3 +97,12 @@ CREATE TABLE detalle_prestamo (
         ON UPDATE RESTRICT,
     CONSTRAINT chk_detalle_cantidad CHECK (cantidad > 0)
 ) ENGINE = InnoDB;
+
+
+CREATE UNIQUE INDEX uq_prestamo_socio_activo
+ON prestamo (
+    (CASE
+        WHEN estado = 'activo' THEN id_socio
+        ELSE NULL
+    END)
+);

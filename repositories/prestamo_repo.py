@@ -45,10 +45,37 @@ class PrestamoRepo(BaseRepository):
         return resultado["rowcount"] > 0
     
     def crear_prestamo(self, dni_socio, id_libro, fecha_devolucion):
+        return self.crear_prestamo_multiple(
+            dni_socio=dni_socio,
+            libros=[(id_libro, 1)],
+            fecha_devolucion=fecha_devolucion
+        )
+
+
+    def crear_prestamo_multiple(self, dni_socio, libros, fecha_devolucion):
+        # libros: [(id_libro, cantidad), ...]
+        if not libros:
+            raise ValueError("Debés seleccionar al menos un libro.")
+
         if fecha_devolucion < date.today():
-            raise ValueError(
-                "La fecha de devolución no puede ser anterior a hoy."
-            )
+            raise ValueError("La devolución no puede ser anterior a hoy.")
+
+        # Validar los libros y sus cantidades
+        seleccion = {}
+
+        for id_libro, cantidad in libros:
+            if (
+                type(id_libro) is not int
+                or id_libro <= 0
+                or type(cantidad) is not int
+                or cantidad <= 0
+            ):
+                raise ValueError("Libro o cantidad inválida.")
+
+            if id_libro in seleccion:
+                raise ValueError("El mismo libro está repetido.")
+
+            seleccion[id_libro] = cantidad
 
         conexion = obtener_conexion()
 
@@ -61,11 +88,12 @@ class PrestamoRepo(BaseRepository):
             conexion.start_transaction()
             cursor = conexion.cursor(dictionary=True)
 
-            # identificar al socio mediante su DNI
+            # Buscar el socio mediante su DNI
             cursor.execute("""
                 SELECT id_socio
                 FROM socio
                 WHERE dni = %s AND fecha_baja IS NULL
+                FOR UPDATE
             """, (dni_socio,))
 
             socio = cursor.fetchone()
@@ -73,36 +101,51 @@ class PrestamoRepo(BaseRepository):
             if socio is None:
                 raise ValueError("El socio no existe o está dado de baja.")
 
-            # obtener el libro y bloquearlo durante la operación
-            cursor.execute("""
-                SELECT cantidad_total
-                FROM libro
-                WHERE id_libro = %s AND fecha_baja IS NULL
-                FOR UPDATE
-            """, (id_libro,))
+            # Bloquear todos los libros en un orden fijo
+            existencias = {}
 
-            libro = cursor.fetchone()
+            for id_libro in sorted(seleccion):
+                cursor.execute("""
+                    SELECT cantidad_total
+                    FROM libro
+                    WHERE id_libro = %s
+                      AND fecha_baja IS NULL
+                    FOR UPDATE
+                """, (id_libro,))
 
-            if libro is None:
-                raise ValueError("El libro no existe o está dado de baja.")
+                libro = cursor.fetchone()
 
-            # calcular ejemplares que todavía no se devolvieron
-            cursor.execute("""
-                SELECT COALESCE(SUM(dp.cantidad), 0) AS ocupados
-                FROM detalle_prestamo dp
-                JOIN prestamo p
-                    ON dp.id_prestamo = p.id_prestamo
-                WHERE dp.id_libro = %s
-                  AND p.estado IN ('activo', 'cerrado_sin_devolver')
-            """, (id_libro,))
+                if libro is None:
+                    raise ValueError(
+                        f"El libro {id_libro} no está disponible."
+                    )
 
-            ocupados = cursor.fetchone()["ocupados"]
-            disponibles = libro["cantidad_total"] - ocupados
+                existencias[id_libro] = libro["cantidad_total"]
 
-            if disponibles < 1:
-                raise ValueError("No hay ejemplares disponibles.")
+            # Verificar disponibilidad de cada libro
+            for id_libro, cantidad in seleccion.items():
+                cursor.execute("""
+                    SELECT COALESCE(SUM(dp.cantidad), 0) AS ocupados
+                    FROM detalle_prestamo dp
+                    JOIN prestamo p
+                        ON dp.id_prestamo = p.id_prestamo
+                    WHERE dp.id_libro = %s
+                      AND p.estado IN (
+                          'activo',
+                          'cerrado_sin_devolver'
+                      )
+                """, (id_libro,))
 
-            # registrar el préstamo
+                ocupados = cursor.fetchone()["ocupados"]
+                disponibles = existencias[id_libro] - ocupados
+
+                if cantidad > disponibles:
+                    raise ValueError(
+                        f"El libro {id_libro} tiene "
+                        f"{disponibles} ejemplares disponibles."
+                    )
+
+            # Crear la cabecera del préstamo
             cursor.execute("""
                 INSERT INTO prestamo (
                     id_socio,
@@ -115,19 +158,18 @@ class PrestamoRepo(BaseRepository):
 
             id_prestamo = cursor.lastrowid
 
-            # asociar un ejemplar del libro al préstamo
-            cursor.execute("""
-                INSERT INTO detalle_prestamo (
-                    id_prestamo,
-                    id_libro,
-                    cantidad
-                )
-                VALUES (%s, %s, %s)
-            """, (id_prestamo, id_libro, 1))
+            # Registrar todos los libros asociados
+            for id_libro, cantidad in seleccion.items():
+                cursor.execute("""
+                    INSERT INTO detalle_prestamo (
+                        id_prestamo,
+                        id_libro,
+                        cantidad
+                    )
+                    VALUES (%s, %s, %s)
+                """, (id_prestamo, id_libro, cantidad))
 
-            # confirmar ambas inserciones
             conexion.commit()
-
             return id_prestamo
 
         except Exception:
@@ -138,3 +180,4 @@ class PrestamoRepo(BaseRepository):
             if cursor is not None:
                 cursor.close()
             conexion.close()
+
