@@ -31,12 +31,12 @@ class LibroRepo(BaseRepository):
         """
         return self._ejecutar_consulta(consulta)
 
-    def crear_libro(self, titulo, autor, anio, cantidad_total):
+    def crear_libro(self, titulo, autor, anio, cantidad_total, isbn):
         consulta = """
-            INSERT INTO libro (titulo, autor, anio, cantidad_total)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO libro (titulo, autor, anio, cantidad_total, isbn)
+            VALUES (%s, %s, %s, %s, %s)
         """
-        resultado = self._ejecutar_escritura(consulta, (titulo, autor, anio, cantidad_total))
+        resultado = self._ejecutar_escritura(consulta, (titulo, autor, anio, cantidad_total, isbn))
         return resultado["lastrowid"]
 
     def actualizar_libro(self, id_libro, titulo, autor, anio, cantidad_total):
