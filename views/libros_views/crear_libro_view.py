@@ -95,7 +95,7 @@ class CrearLibro(BaseFrame):
                 columna,
                 width=anchos[columna],
                 minwidth=60,
-                stretch=False,  # CRÍTICO: Evita que las columnas se reduzcan automáticamente
+                stretch=False, 
                 anchor="center" if columna in ("id", "año") else "w"
             )
 
