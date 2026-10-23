@@ -3,6 +3,24 @@ from repositories.base_repository import BaseRepository
 
 class SociosRepo(BaseRepository):
     
+    def cantidad_socios(self):
+        consulta = """
+            SELECT COUNT(*) AS total
+            FROM socio
+        """
+        resultado = self._ejecutar_consulta(consulta)
+        return resultado[0]['total'] if resultado else 0
+    
+    def cantidad_socios_prestamos(self):
+        consulta = """
+            SELECT count(distinct prestamo.id_socio) as unicos
+            from socio
+            inner join prestamo On socio.id_socio = prestamo.id_socio;
+        """
+        resultado = self._ejecutar_consulta(consulta)
+        return resultado[0]['unicos'] if resultado else 0
+        
+    
     def obtener_socios_dni(self):
         consulta = """
             SELECT dni

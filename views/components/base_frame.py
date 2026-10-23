@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from database.database import ApiDatabase
 from repositories.conexion import obtener_conexion
 from repositories.libro_repo import LibroRepo
 from repositories.prestamo_repo import PrestamoRepo
@@ -15,8 +14,6 @@ class BaseFrame(tk.Frame):
         self.ApiLibros= LibroRepo(self.conexion)
         self.ApiPrestamos = PrestamoRepo(self.conexion)
         self.ApiSocios = SociosRepo(self.conexion)
-        
-        self.API = ApiDatabase()
         #? Configuración del grid principal de la pantalla
         
         self.rowconfigure(0, weight=0) # Título
