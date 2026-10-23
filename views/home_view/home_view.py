@@ -12,20 +12,21 @@ class HomeView(BaseFrame):
         super().__init__(parent, controller)
         
         datos_libro = [
-            ("Cantidad de Libros:", self.ApiLibros.obtener_total_ejemplares()),
-            ("Libros Prestados:", len(self.API.traer_libros_prestados())), #! Falta usar la api oficial
-            ("Libros Disponibles:", len(self.API.traer_libros_prestados())-10), #! Falta usar la api oficial
+            ("Cantidad de Libros:", self.ApiLibros.cantidad_total_ejemplares()),
+            ("Libros Prestados:", (self.ApiLibros.cantidad_ejemplares_prestados())),
+            ("Libros Disponibles:", (self.ApiLibros.cantidad_total_ejemplares() - self.ApiLibros.cantidad_ejemplares_prestados())),
         ]
+        
         
         datos_prestamos = [
-            ("Prestamos Activos:", "32"), #! Falta usar la api oficial
-            ("Prestamos Finalizados:", "23"), #! Falta usar la api oficial
-            ("Prestamos Con Atraso:", "6"), #! Falta usar la api oficial
+            ("Prestamos Activos:", self.ApiPrestamos.cantidad_prestamos_activos()),
+            ("Prestamos Finalizados:", self.ApiPrestamos.cantidad_prestamos_finalizados()),
+            ("Prestamos Con Atraso:", self.ApiPrestamos.cantidad_prestamos_atraso()),
         ]
         
-        datos_socios = [ #! Falta usar la api oficial
-            ("Cantidad de Socios:", "54"),
-                ("Socios Con Prestamos:", "23")
+        datos_socios = [ 
+            ("Cantidad de Socios:", self.ApiSocios.cantidad_socios()),
+            ("Socios Con Prestamos:", self.ApiSocios.cantidad_socios_prestamos())
             ]
         
         self.crear_titulo("Inicio")
