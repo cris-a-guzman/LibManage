@@ -2,7 +2,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from views.components.base_frame import BaseFrame
-from repositories.socio_repo import obtener_socio_por_id, listar_prestamos_socio
 
 
 class VistaPrestamosSocio(BaseFrame):
@@ -11,13 +10,9 @@ class VistaPrestamosSocio(BaseFrame):
         super().__init__(parent, controller)
         self.controller = controller
 
-        #? Traer datos del socio y sus préstamos de la base de datos de prueba
-        # self.socio = self.API.traer_socio_por_id(id_socio)
-        # self.prestamos_socio = self.API.traer_prestamos_socio(id_socio)
-
         # ? Traer datos del socio y sus préstamos de la base de datos mysql
-        self.socio = obtener_socio_por_id(id_socio)
-        self.prestamos_socio = listar_prestamos_socio(id_socio)
+        self.socio = self.ApiSocios.obtener_socio_por_id(id_socio)
+        self.prestamos_socio = self.ApiSocios.listar_prestamos_socio(id_socio)
 
         if not self.socio:
             messagebox.showerror("Error", "No se encontró el socio.")
@@ -64,9 +59,8 @@ class VistaPrestamosSocio(BaseFrame):
             pady=(10, 15)
         )
 
-        self.frame_datos.columnconfigure(0, weight=1)
+        self.frame_datos.columnconfigure((0,2), weight=1)
         self.frame_datos.columnconfigure(1, weight=2)
-        self.frame_datos.columnconfigure(2, weight=1)
 
         tk.Label(
             self.frame_datos,

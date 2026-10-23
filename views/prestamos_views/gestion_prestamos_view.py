@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from views.components.base_frame import BaseFrame
-from repositories.prestamo_repo import listar_prestamos, devolver_prestamo
 
 class GestionPrestamos(BaseFrame):
 
@@ -15,30 +14,22 @@ class GestionPrestamos(BaseFrame):
         self.frame_central = self.crear_frame_central()
         self.frame_central.columnconfigure(0, weight=4)
         self.frame_central.columnconfigure(1, weight=1)
-        self.frame_central.rowconfigure(0, weight=0)
-        self.frame_central.rowconfigure(1, weight=0) #? Esto tambien se podria refactorizar
+        
+        self.frame_central.rowconfigure((0,1,3), weight=0)
         self.frame_central.rowconfigure(2, weight=1)
-        self.frame_central.rowconfigure(3, weight=0)
 
         #? -- TItulo
         self.crear_titulo("Gestion de Prestamos")
-        
 
         #? --- Barra de busqueda
-        self.crear_barra_busqueda("Buscar Prestamo", self.buscar)
+        self.crear_barra_busqueda("Buscar préstamo", self.buscar)
 
-        self.boton = tk.Button(
+        self.busqueda.grid_configure(columnspan=1, padx=(0, 5))
+
+        self.boton = tk.Button( #! se puede refactorizar
             self.frame_central, text="Buscar", command=self.buscar
         )
         self.boton.grid(row=0, column=1, sticky="ew", padx=5, pady=3)
-
-        #? --- Filtros y Ordenar
-        self.botones_filtros_frame = tk.Frame(self.frame_central)
-        self.botones_filtros_frame.grid(
-            row=1, column=0, columnspan=2, sticky="nsew", pady=5
-        )
-        self.botones_filtros_frame.columnconfigure(0, weight=1)
-        self.botones_filtros_frame.columnconfigure(1, weight=1)
 
         #? Boton Ordenar
         self.crear_boton_ordenar(self.ordenar)
@@ -56,32 +47,23 @@ class GestionPrestamos(BaseFrame):
 
         # --- Botones de Acción (Inferiores)
         self.frame_acciones = tk.Frame(self.frame_central)
-        self.frame_acciones.grid(
-            row=3, column=0, columnspan=2, sticky="ew", pady=5
-        )
+        self.frame_acciones.grid(row=3, column=0, columnspan=2, sticky="ew", pady=5)
         self.frame_acciones.columnconfigure(0, weight=1)
 
-        self.btn_devolver = tk.Button(
-            self.frame_acciones,
-            text="devolver",
-            command=self.marcar_devuelto,
-        )
+        self.btn_devolver = tk.Button(self.frame_acciones, text="devolver", command=self.marcar_devuelto, )
         self.btn_devolver.pack(side="right", padx=5)
+        self.btn_devolver.config(state="disabled")
+
+        self.tabla.bind("<<TreeviewSelect>>", self.actualizar_boton_devolver)
 
         #? Boton Crear (Registrar prestamo)
         self.crear_boton_crear("Registrar Prestamo", self.registrar_prestamo)
         
         #? Boton Volver Atras
         self.crear_boton_volver(self.volver_atras)
-        
-        #! Ejemplo de datos
-        # self.prestamos_datos = [
-        #     (1, "Juan Perez", "1984", "12/09"),
-        #     (2, "Lucia Diaz", "Rayuela", "02/09"),
-        # ]
 
         #? Traer prestamos de la base de datos
-        self.prestamos_datos = listar_prestamos()
+        self.prestamos_datos = self.ApiPrestamos.listar_prestamos()
         self.actualizar_tabla(self.prestamos_datos)
 
     
@@ -89,7 +71,7 @@ class GestionPrestamos(BaseFrame):
         nuevo_estado = not self.solo_vencidos
 
         try:
-            datos = listar_prestamos(
+            datos = self.ApiPrestamos.listar_prestamos(
                 solo_vencidos=nuevo_estado
             )
 
@@ -117,6 +99,24 @@ class GestionPrestamos(BaseFrame):
             self.tabla.delete(item)
         for prestamo in lista_prestamos:
             self.tabla.insert("", "end", values=prestamo)
+
+        self.actualizar_boton_devolver()
+
+
+    def actualizar_boton_devolver(self, event=None):
+        seleccion = self.tabla.selection()
+
+        if not seleccion:
+            self.btn_devolver.config(state="disabled")
+            return
+
+        valores = self.tabla.item(seleccion[0], "values")
+        estado = str(valores[4]).strip().lower()
+
+        if estado == "activo":
+            self.btn_devolver.config(state="normal")
+        else:
+            self.btn_devolver.config(state="disabled")
 
     def buscar(self, event=None):
         """Filtra la lista de prestamos según lo ingresado."""
@@ -146,43 +146,31 @@ class GestionPrestamos(BaseFrame):
         seleccion = self.tabla.selection()
 
         if not seleccion:
-            messagebox.showwarning(
-                "Atención",
-                "Seleccioná un préstamo."
-            )
+            self.mensaje_advertencia("Atención", "Seleccioná un préstamo.")
             return
 
         item = self.tabla.item(seleccion[0])
         id_prestamo = int(item["values"][0])
 
-        confirmar = messagebox.askyesno(
-            "Confirmar devolución",
-            f"¿Confirmás la devolución del préstamo {id_prestamo}?"
-        )
+        confirmar = self.mensaje_confirmacion("Confirmar devolución", f"¿Confirmás la devolución del préstamo {id_prestamo}?")
 
         if not confirmar:
             return
 
         try:
-            resultado = devolver_prestamo(id_prestamo)
+            resultado = self.ApiPrestamos.devolver_prestamo(id_prestamo)
 
             if not resultado:
-                messagebox.showwarning(
-                    "Atención",
-                    "El préstamo no está activo o no puede devolverse."
-                )
+                self.mensaje_advertencia("Atención", "El préstamo no está activo o no puede devolverse.")
                 return
 
             # Volver a consultar MySQL para actualizar la tabla
-            self.prestamos_datos = listar_prestamos(
+            self.prestamos_datos = self.ApiPrestamos.listar_prestamos(
                 solo_vencidos=self.solo_vencidos
             ) 
             self.actualizar_tabla(self.prestamos_datos)
 
-            messagebox.showinfo(
-                "Devolución registrada",
-                "El préstamo fue devuelto correctamente."
-            )
+            self.mensaje_info("Devolución registrada","El préstamo fue devuelto correctamente.")
 
         except Exception as error:
             messagebox.showerror(

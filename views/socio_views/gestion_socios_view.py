@@ -1,18 +1,15 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from views.components.base_frame import BaseFrame
-from repositories.socio_repo import listar_socios
+
 
 class GestionSocios(BaseFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         self.controller = controller
 
-        #! Datos de ejemplo para los socios
-        # self.socios = self.API.traer_socios()
         #? Traer socios de la base de datos
-        self.socios = listar_socios()
-        print(self.socios)
+        self.socios = self.ApiSocios.listar_socios()
 
         #? Frame Central
         self.frame_central.columnconfigure(0, weight=1) #? Esto tambien se podria refactorizar
@@ -111,9 +108,8 @@ class GestionSocios(BaseFrame):
     def registrar_socio(self, socio=None):
         from views.socio_views.registrar_socio_view import RegistrarSocio
         self.controller.show_frame(RegistrarSocio, socio)
-        # Una vez con la conexion a la db debemos resolver lo de pasar Socio
         
-    def volver_atras(self): #! Esto lo podriamos pasar a controller me parece
+    def volver_atras(self):
         from views.home_view.home_view import HomeView
         self.controller.show_frame(HomeView)
     

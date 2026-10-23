@@ -10,7 +10,7 @@ class MainWindow(tk.Tk):
         # Configuracion de la ventana
         self.title("LibManage")
         self.centrar_pantalla()
-        self.resizable(False, False)
+        self.resizable(True, True)
         
         self._crear_header()
         

@@ -1,134 +1,90 @@
-from repositories.conexion import obtener_conexion
+# repositories/libro_repository.py
+from repositories.base_repository import BaseRepository
 
+class LibroRepo(BaseRepository):
+    
+    def obtener_titulos_ids(self):
+        consulta = """
+            SELECT titulo, id_libro
+            FROM libro
+            WHERE fecha_baja IS NULL
+        """
+        
+        return self._ejecutar_consulta(consulta)
+        
+    
+    def obtener_total_ejemplares(self):
+        consulta = """
+            SELECT COALESCE(SUM(cantidad_total), 0) AS total 
+            FROM libro 
+            WHERE fecha_baja IS NULL
+        """
+        resultado = self._ejecutar_consulta(consulta, fetchone=True)
+        return resultado["total"] if resultado else 0
 
-def listar_libros():
-    # consultar libros
-    conexion = obtener_conexion()
-
-    if conexion is None:
-        raise ConnectionError("No se pudo conectar a MySQL")
-
-    cursor = None
-
-    try:
-        cursor = conexion.cursor(dictionary=True)
-
-        cursor.execute("""
+    def listar_libros(self):
+        consulta = """
             SELECT id_libro, isbn, titulo, autor, anio, cantidad_total
             FROM libro
             WHERE fecha_baja IS NULL
             ORDER BY titulo
-        """)
+        """
+        return self._ejecutar_consulta(consulta)
 
-        libros = cursor.fetchall()
-        return libros
-
-    finally:
-        if cursor is not None:
-            cursor.close()
-        conexion.close()
-
-
-def crear_libro(titulo, autor, anio, cantidad_total):
-    # insertar libros
-    conexion = obtener_conexion()
-
-    if conexion is None:
-        raise ConnectionError("No se pudo conectar a MySQL")
-
-    cursor = None
-
-    try:
-        cursor = conexion.cursor()
-
+    def crear_libro(self, titulo, autor, anio, cantidad_total):
         consulta = """
             INSERT INTO libro (titulo, autor, anio, cantidad_total)
             VALUES (%s, %s, %s, %s)
         """
+        resultado = self._ejecutar_escritura(consulta, (titulo, autor, anio, cantidad_total))
+        return resultado["lastrowid"]
 
-        datos = (titulo, autor, anio, cantidad_total)
-
-        cursor.execute(consulta, datos)
-        conexion.commit()
-
-        return cursor.lastrowid
-
-    except Exception:
-        conexion.rollback()
-        raise
-
-    finally:
-        if cursor is not None:
-            cursor.close()
-        conexion.close()
-
-
-def actualizar_libro(id_libro, titulo, autor, anio, cantidad_total):
-    # modificar libros
-    conexion = obtener_conexion()
-
-    if conexion is None:
-        raise ConnectionError("No se pudo conectar a MySQL")
-
-    cursor = None
-
-    try:
-        cursor = conexion.cursor()
-
+    def actualizar_libro(self, id_libro, titulo, autor, anio, cantidad_total):
         consulta = """
             UPDATE libro
-            SET titulo = %s,
-                autor = %s,
-                anio = %s,
-                cantidad_total = %s
+            SET titulo = %s, autor = %s, anio = %s, cantidad_total = %s
             WHERE id_libro = %s
         """
+        self._ejecutar_escritura(consulta, (titulo, autor, anio, cantidad_total, id_libro))
 
-        datos = (titulo, autor, anio, cantidad_total, id_libro)
-
-        cursor.execute(consulta, datos)
-        conexion.commit()
-
-    except Exception:
-        conexion.rollback()
-        raise
-
-    finally:
-        if cursor is not None:
-            cursor.close()
-        conexion.close()
-
-
-def dar_baja_libro(id_libro):
-    # dar de baja libros
-    conexion = obtener_conexion()
-
-    if conexion is None:
-        raise ConnectionError("No se pudo conectar a MySQL")
-
-    cursor = None
-
-    try:
-        cursor = conexion.cursor()
-
+    def dar_baja_libro(self, id_libro):
         consulta = """
             UPDATE libro
             SET fecha_baja = NOW()
-            WHERE id_libro = %s
-              AND fecha_baja IS NULL
+            WHERE id_libro = %s AND fecha_baja IS NULL
+        """
+        resultado = self._ejecutar_escritura(consulta, (id_libro,))
+        return resultado["rowcount"] > 0
+    
+    def obtener_disponibilidad_libros(self):
+        consulta = """
+            SELECT
+                l.id_libro,
+                l.titulo,
+                l.cantidad_total,
+                l.cantidad_total - COALESCE(
+                    SUM(
+                        CASE
+                            WHEN p.estado IN (
+                                'activo',
+                                'cerrado_sin_devolver'
+                            )
+                            THEN dp.cantidad
+                            ELSE 0
+                        END
+                    ), 0
+                ) AS disponibles
+            FROM libro l
+            LEFT JOIN detalle_prestamo dp
+                ON dp.id_libro = l.id_libro
+            LEFT JOIN prestamo p
+                ON p.id_prestamo = dp.id_prestamo
+            WHERE l.fecha_baja IS NULL
+            GROUP BY
+                l.id_libro,
+                l.titulo,
+                l.cantidad_total
+            ORDER BY l.titulo
         """
 
-        cursor.execute(consulta, (id_libro,))
-        filas_modificadas = cursor.rowcount
-        conexion.commit()
-
-        return filas_modificadas > 0
-
-    except Exception:
-        conexion.rollback()
-        raise
-
-    finally:
-        if cursor is not None:
-            cursor.close()
-        conexion.close()
+        return self._ejecutar_consulta(consulta)

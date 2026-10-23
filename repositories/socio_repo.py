@@ -1,71 +1,36 @@
+# repositories/socios_repository.py
+from repositories.base_repository import BaseRepository
 
-from repositories.conexion import obtener_conexion
+class SociosRepo(BaseRepository):
+    
+    def obtener_socios_dni(self):
+        consulta = """
+            SELECT dni
+            FROM socio
+            WHERE fecha_baja IS NULL
+            ORDER BY dni DESC
+        """        
+        return [i['dni'] for i in self._ejecutar_consulta(consulta)]
+        
 
-
-def listar_socios():
-    conexion = obtener_conexion()
-
-    if conexion is None:
-        raise ConnectionError("No se pudo conectar a MySQL")
-
-    cursor = None
-
-    try:
-        cursor = conexion.cursor(dictionary=True)
-
-        cursor.execute("""
+    def listar_socios(self):
+        consulta = """
             SELECT id_socio, dni, nombre, apellido
             FROM socio
             WHERE fecha_baja IS NULL
             ORDER BY apellido, nombre
-        """)
+        """
+        return self._ejecutar_consulta(consulta)
 
-        return cursor.fetchall()
-
-    finally:
-        if cursor is not None:
-            cursor.close()
-        conexion.close()
-
-
-
-def obtener_socio_por_id(id_socio):
-    conexion = obtener_conexion()
-
-    if conexion is None:
-        raise ConnectionError("No se pudo conectar a MySQL")
-
-    cursor = None
-
-    try:
-        cursor = conexion.cursor(dictionary=True)
-
-        cursor.execute("""
+    def obtener_socio_por_id(self, id_socio):
+        consulta = """
             SELECT id_socio, dni, nombre, apellido
             FROM socio
             WHERE id_socio = %s
-        """, (id_socio,))
+        """
+        return self._ejecutar_consulta(consulta, (id_socio,), fetchone=True)
 
-        return cursor.fetchone()
-
-    finally:
-        if cursor is not None:
-            cursor.close()
-        conexion.close()
-
-
-
-def listar_prestamos_socio(id_socio):
-    conexion = obtener_conexion()
-
-    if conexion is None:
-        raise ConnectionError("No se pudo conectar a MySQL")
-
-    cursor = None
-
-    try:
-        cursor = conexion.cursor(dictionary=True)
-
+    def listar_prestamos_socio(self, id_socio):
         consulta = """
             SELECT
                 p.id_prestamo AS id,
@@ -79,24 +44,10 @@ def listar_prestamos_socio(id_socio):
                 p.fecha_devolucion_real,
                 p.estado
             FROM prestamo p
-            JOIN detalle_prestamo dp
-                ON p.id_prestamo = dp.id_prestamo
-            JOIN libro l
-                ON dp.id_libro = l.id_libro
+            JOIN detalle_prestamo dp ON p.id_prestamo = dp.id_prestamo
+            JOIN libro l ON dp.id_libro = l.id_libro
             WHERE p.id_socio = %s
-            GROUP BY
-                p.id_prestamo,
-                p.fecha_prestamo,
-                p.fecha_devolucion_estimada,
-                p.fecha_devolucion_real,
-                p.estado
+            GROUP BY p.id_prestamo, p.fecha_prestamo, p.fecha_devolucion_estimada, p.fecha_devolucion_real, p.estado
             ORDER BY p.fecha_prestamo DESC
         """
-
-        cursor.execute(consulta, (id_socio,))
-        return cursor.fetchall()
-
-    finally:
-        if cursor is not None:
-            cursor.close()
-        conexion.close()
+        return self._ejecutar_consulta(consulta, (id_socio,))
