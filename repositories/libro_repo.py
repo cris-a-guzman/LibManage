@@ -9,11 +9,9 @@ class LibroRepo(BaseRepository):
             FROM libro
             WHERE fecha_baja IS NULL
         """
-        
         return self._ejecutar_consulta(consulta)
-        
     
-    def obtener_total_ejemplares(self):
+    def cantidad_total_ejemplares(self):
         consulta = """
             SELECT COALESCE(SUM(cantidad_total), 0) AS total 
             FROM libro 
@@ -21,6 +19,15 @@ class LibroRepo(BaseRepository):
         """
         resultado = self._ejecutar_consulta(consulta, fetchone=True)
         return resultado["total"] if resultado else 0
+    
+    def cantidad_ejemplares_prestados(self):
+        consulta = """SELECT COALESCE(SUM(dt.cantidad), 0) AS libros_prestados
+            FROM detalle_prestamo dt
+            JOIN prestamo p ON dt.id_prestamo = p.id_prestamo
+            WHERE p.estado = 'activo'
+            """
+        resultado = self._ejecutar_consulta(consulta)        
+        return resultado[0]['libros_prestados'] if resultado else 0
 
     def listar_libros(self):
         consulta = """

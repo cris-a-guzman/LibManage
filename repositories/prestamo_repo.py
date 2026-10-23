@@ -4,6 +4,28 @@ from repositories.base_repository import BaseRepository
 from repositories.conexion import obtener_conexion
 
 class PrestamoRepo(BaseRepository):
+    
+    def cantidad_prestamos_activos(self):
+        consulta = """
+            SELECT count(*) as prestamos_activos FROM prestamo where estado = "activo"
+        """
+        resultado = self._ejecutar_consulta(consulta)
+        print(resultado)
+        return resultado[0]['prestamos_activos'] if resultado else 0
+    
+    def cantidad_prestamos_finalizados(self):
+        consulta = """
+            SELECT count(*) as prestamos_finalizados FROM prestamo WHERE estado = 'cerrado' OR estado = 'devuelto'
+        """
+        resultado = self._ejecutar_consulta(consulta)
+        return resultado[0]['prestamos_finalizados'] if resultado else 0
+    
+    def cantidad_prestamos_atraso(self):
+        consulta = """
+            SELECT count(*) AS cantidad FROM prestamo where fecha_devolucion_real is null
+        """
+        resultado = self._ejecutar_consulta(consulta)
+        return resultado[0]['cantidad'] if resultado else 0
 
     def listar_prestamos(self, solo_vencidos=False):
         consulta = """
