@@ -35,7 +35,7 @@ class HomeView(BaseFrame):
         #?-- Botones centrales
         ttk.Button(
             self.frame_central,
-            text="📚 Gestión de Libros",
+            text="Gestión de Libros",
             style="Dashboard.TButton",
             padding=(20,20),
             command=lambda: controller.show_frame(GestionLibros)
@@ -43,7 +43,7 @@ class HomeView(BaseFrame):
         
         ttk.Button(
             self.frame_central,
-            text="🔄 Gestión de Préstamos",
+            text="Gestión de Préstamos",
             style="Dashboard.TButton",
             padding=(20,20),
             command=lambda: controller.show_frame(GestionPrestamos)
@@ -51,7 +51,7 @@ class HomeView(BaseFrame):
         
         ttk.Button(
             self.frame_central,
-            text="👥 Gestión de Socios",
+            text="Gestión de Socios",
             style="Dashboard.TButton",
             padding=(20,20),
             command=lambda: controller.show_frame(GestionSocios)

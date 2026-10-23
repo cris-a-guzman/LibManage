@@ -247,7 +247,7 @@ class RegistrarPrestamo(BaseFrame):
 
         self.lbl_libro_seleccionado.config(
             text=(
-                f"Libro: {libro['titulo']} — "
+                f"Libro: {libro['titulo']} - "
                 f"{int(libro['disponibles'])} disponibles"
             ),
             bg="#d9f2d9"
