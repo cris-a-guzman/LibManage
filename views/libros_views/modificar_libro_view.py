@@ -1,10 +1,16 @@
+# Formulario compartido para crear o modificar un libro.
+# Valida entradas en la interfaz y delega la persistencia en LibroRepo.
+# Referencias: docs/estudio/README.md#persistencia-y-crud y
+# docs/estudio/README.md#reglas-de-negocio
 import tkinter as tk
 from tkinter import messagebox
 from views.components.base_frame import BaseFrame
 from views.components.formulario_desplazable import FormularioDesplazable
 
 
+# Vista cuyo comportamiento depende de si recibe o no `libro_datos`.
 class ModificarLibro(BaseFrame):
+    # Configura campos desplazables y botones para alta, edición o baja lógica.
     def __init__(self, parent, controller, libro_datos=None):
         super().__init__(parent, controller)
         self.controller = controller
@@ -72,11 +78,13 @@ class ModificarLibro(BaseFrame):
             )
             self.btn_eliminar.grid(row=0, column=1, padx=5, ipady=3, sticky="ew")
             
+    # Crea una etiqueta en la fila indicada y devuelve el widget.
     def crear_etiqueta(self, titulo, fila):
         label = tk.Label(self.frame_formulario, text=titulo, justify="center", width=40)
         label.grid(row=fila, column=0, pady=4, ipady=6)
         return label
         
+    # Crea un Entry con texto orientativo que se borra al recibir foco.
     def crear_campo(self, placeholder, fila):
         entry = tk.Entry(self.frame_formulario, justify="center", width=40)
         entry.insert(0, placeholder)
@@ -85,6 +93,7 @@ class ModificarLibro(BaseFrame):
         entry.bind("<FocusIn>", lambda e, p=placeholder: entry.delete(0, tk.END) if entry.get() == p else None)
         return entry
 
+    # Si se recibió un libro, copia sus valores a los campos del formulario.
     def cargar_datos(self):
         if self.libro_datos:
             self.set_entry(self.txt_titulo, self.libro_datos.get("titulo", ""))
@@ -93,11 +102,13 @@ class ModificarLibro(BaseFrame):
             self.set_entry(self.txt_cantidad, self.libro_datos.get("cantidad_total", ""))
             # self.set_entry(self.txt_isbn), self.libro_datos.get("isbn", "")
 
+    # Reemplaza el contenido de un Entry cuando el valor no está vacío.
     def set_entry(self, entry, valor):
         if valor:
             entry.delete(0, tk.END)
             entry.insert(0, valor)
 
+    # Convierte y valida los campos; luego elige INSERT o UPDATE según exista id.
     def guardar_cambios(self):
         # Recuperar los datos del formulario
         titulo = self.txt_titulo.get().strip()
@@ -158,12 +169,14 @@ class ModificarLibro(BaseFrame):
         self.controller.show_frame(GestionLibros)
 
 
+    # Descarta el contenido visible y vuelve al listado sin escribir en MySQL.
     def descartar(self):
         from views.libros_views.gestion_libros_view import GestionLibros
         messagebox.showinfo(title="Libro Descartad", message="Libro Descartado exitosamente.\n Volviendo atras...")
         self.controller.show_frame(GestionLibros)
 
     
+    # Pide confirmación y solicita una baja lógica al repositorio.
     def eliminar_libro(self):
         if not self.libro_datos:
             return

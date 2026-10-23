@@ -1,9 +1,13 @@
+# Pantalla que lista socios y da acceso al alta y a su historial.
+# Los registros se obtienen mediante SocioRepository y se muestran en Treeview.
+# Guía: docs/estudio/README.md#persistencia-y-crud
 import tkinter as tk
 from tkinter import ttk, messagebox
 from views.components.base_frame import BaseFrame
 
 
 class GestionSocios(BaseFrame):
+    # Mantiene en memoria el listado de socios y coordina sus acciones.
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         self.controller = controller
@@ -45,6 +49,7 @@ class GestionSocios(BaseFrame):
         self.actualizar_tabla(self.socios)
         
     def crear_boton_ver(self, texto, funcion_ver):
+        # Agrega el botón específico que abre los préstamos del socio.
         self.frame_inferior.columnconfigure(2, weight=1)
         self.btn_ver = tk.Button(
             self.frame_inferior,
@@ -55,6 +60,7 @@ class GestionSocios(BaseFrame):
         self.btn_ver.grid(row=0, column=2, sticky="ew", padx=(10,10), pady=(10, 0), ipady=6)
 
     def filtrar(self):
+        # Acción provisoria: actualmente solo informa por consola.
         print("Filtrando")
 
     def actualizar_tabla(self, lista_socios):
@@ -82,6 +88,7 @@ class GestionSocios(BaseFrame):
             self.actualizar_tabla(self.socios)
             return
 
+        # La comprensión prueba el mismo texto contra DNI, nombre y apellido.
         resultados = [
             socio for socio in self.socios
             if texto in str(socio["dni"]).lower()
@@ -106,14 +113,17 @@ class GestionSocios(BaseFrame):
         self.actualizar_tabla(socios_ordenados)
 
     def registrar_socio(self, socio=None):
+        # Navega al formulario, con datos opcionales para reutilizar la vista.
         from views.socio_views.registrar_socio_view import RegistrarSocio
         self.controller.show_frame(RegistrarSocio, socio)
         
     def volver_atras(self):
+        # Regresa a la pantalla principal.
         from views.home_view.home_view import HomeView
         self.controller.show_frame(HomeView)
     
     def ver_prestamos(self, datos=None):
+        # Abre el historial usando el identificador de la fila seleccionada.
         seleccionado = self.tabla.selection()
 
         if not seleccionado:

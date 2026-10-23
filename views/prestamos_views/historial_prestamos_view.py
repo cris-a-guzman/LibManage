@@ -1,8 +1,13 @@
+# Vista histórica en estado incompleto dentro de la versión principal.
+# Se conserva exactamente como fue implementada: los nombres self.socio y
+# self.prestamos no se inicializan aquí. La guía registra esa discrepancia sin
+# corregirla: docs/estudio/README.md#limitaciones-y-observaciones
 import tkinter as tk
 from tkinter import messagebox
 from views.components.base_frame import BaseFrame
 
 class HistorialPrestamosSocio(BaseFrame):
+    # Maqueta una ficha de socio junto con el texto de sus préstamos.
 
     def __init__(self, parent, controller, datos):
         super().__init__(parent, controller)
@@ -94,6 +99,8 @@ class HistorialPrestamosSocio(BaseFrame):
         self.crear_boton_volver(self.volver_atras)
 
     def renderizar_listado(self):
+        # Acumula una representación legible de cada préstamo. En el estado
+        # actual, self.prestamos no fue asignado por el constructor.
         """Arma el texto del listado de prestamos del socio."""
         texto = ""
         for prestamo in self.prestamos:
@@ -107,8 +114,10 @@ class HistorialPrestamosSocio(BaseFrame):
         self.lbl_listado.config(text=texto.strip())
 
     def ver_prestamos(self):
+        # Acción provisoria: informa por consola, sin consultar datos.
         print(f"Mostrando prestamos completos de {self.socio['nombre']}...")
 
     def volver_atras(self):
+        # Regresa a la gestión de socios.
         from views.socio_views.gestion_socios_view import GestionSocios
         self.controller.show_frame(GestionSocios)

@@ -1,3 +1,6 @@
+# Pantalla de inicio: enlaza las áreas de libros, préstamos y socios
+# y resume cantidades obtenidas por medio de los repositorios.
+# Referencia: docs/estudio/README.md#programación-orientada-a-objetos
 import tkinter as tk
 from tkinter import ttk
 from views.libros_views.gestion_libros_view import GestionLibros
@@ -6,8 +9,10 @@ from views.socio_views.gestion_socios_view import GestionSocios
 from views.components.base_frame import BaseFrame
 
 
+# Vista concreta que hereda estructura, conexión y navegación de BaseFrame.
 class HomeView(BaseFrame):
 
+    # Consulta las métricas al construir la pantalla y crea los accesos principales.
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         
@@ -76,6 +81,7 @@ class HomeView(BaseFrame):
         self.tree_socios = self.crear_tree(self.frame_central, 2)
         self.renderizar_datos(datos_socios, self.tree_socios)        
         
+    # Crea una tabla pequeña de atributo/valor en la columna indicada.
     def crear_tree(self, frame_parent, col):
         columnas = {
             "atributo":150,
@@ -93,6 +99,7 @@ class HomeView(BaseFrame):
             
         return tree
 
+    # Recorre pares `(nombre, valor)` y agrega una fila visual por métrica.
     def renderizar_datos(self, datos, tree):
         for clave, valor in datos:
             tree.insert("", "end", values=(clave, valor))

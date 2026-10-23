@@ -1,8 +1,14 @@
+# Pantalla de lectura y navegación del catálogo de libros.
+# Consulta MySQL una vez al crearse y filtra u ordena esa lista en memoria.
+# Referencias: docs/estudio/README.md#tkinter-y-programación-dirigida-por-eventos y
+# docs/estudio/README.md#persistencia-y-crud
 import tkinter as tk
 from tkinter import ttk, messagebox
 from views.components.base_frame import BaseFrame
 
+# Vista concreta que presenta filas de `libro` en un Treeview.
 class GestionLibros(BaseFrame):
+    # Recibe el controlador, carga libros vigentes y arma controles y tabla.
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         self.controller = controller
@@ -59,6 +65,7 @@ class GestionLibros(BaseFrame):
 
         self.actualizar_tabla(self.libros_datos)
         
+    # Vacía la tabla y vuelve a insertar la lista de diccionarios recibida.
     def actualizar_tabla(self, lista_libros):
         for item in self.tabla.get_children():
             self.tabla.delete(item)
@@ -77,6 +84,7 @@ class GestionLibros(BaseFrame):
                 )
             )
 
+    # Compara el texto normalizado con título, autor e ISBN en memoria.
     def buscar(self):
         texto = self.busqueda.get().strip().lower()
         if not texto or texto == "barra de busqueda":
@@ -91,14 +99,17 @@ class GestionLibros(BaseFrame):
         ]
         self.actualizar_tabla(resultados)
 
+    # Crea una nueva lista ordenada por título y la muestra sin alterar MySQL.
     def ordenar(self):
         libros_ordenados = sorted(self.libros_datos, key=lambda x: x["titulo"])
         self.actualizar_tabla(libros_ordenados)
 
+    # Restablece el listado completo; conserva el nombre histórico del método.
     def filtrar(self):
         self.busqueda.delete(0, tk.END)
         self.actualizar_tabla(self.libros_datos)
 
+    # Valida la selección, recupera el libro correspondiente y abre el formulario.
     def modificar_seleccionado(self):
         seleccion = self.tabla.selection()
         if not seleccion:
@@ -111,10 +122,12 @@ class GestionLibros(BaseFrame):
         libro = next((l for l in self.libros_datos if l["id_libro"] == id_libro), None)
         self.modificar_libro(libro)
 
+    # Reutiliza ModificarLibro: sin datos crea y con datos actualiza.
     def modificar_libro(self, libro=None):
         from views.libros_views.modificar_libro_view import ModificarLibro
         self.controller.show_frame(ModificarLibro, libro)
 
+    # Solicita al controlador reemplazar esta vista por HomeView.
     def volver_atras(self):
         from views.home_view.home_view import HomeView
         self.controller.show_frame(HomeView)

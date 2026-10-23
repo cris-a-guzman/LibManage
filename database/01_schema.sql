@@ -2,6 +2,9 @@
 -- LibManage - 01_schema.sql
 -- Motor: MySQL 8.0.16 o superior
 -- No se incluyen DROP para evitar eliminaciones accidentales.
+-- Propósito pedagógico: define el modelo relacional y varias reglas que MySQL
+-- debe proteger aun cuando los datos no provengan de la interfaz gráfica.
+-- Guía: docs/estudio/README.md#modelo-relacional-y-sql
 -- ============================================================
 
 CREATE DATABASE IF NOT EXISTS libmanage
@@ -14,6 +17,8 @@ USE libmanage;
 -- SOCIO
 -- ------------------------------------------------------------
 CREATE TABLE socio (
+    -- La clave primaria identifica cada fila; DNI es una clave candidata y su
+    -- restricción UNIQUE impide repetir socios, incluso si tienen fecha_baja.
     id_socio INT NOT NULL AUTO_INCREMENT,
     dni VARCHAR(20) NOT NULL,
     nombre VARCHAR(100) NOT NULL,
@@ -30,6 +35,8 @@ CREATE TABLE socio (
 -- LIBRO
 -- ------------------------------------------------------------
 CREATE TABLE libro (
+    -- cantidad_total representa ejemplares físicos, no disponibilidad actual.
+    -- La disponibilidad se calcula descontando préstamos no restituidos.
     id_libro INT NOT NULL AUTO_INCREMENT,
     isbn VARCHAR(20) NULL,
     titulo VARCHAR(255) NOT NULL,
@@ -46,6 +53,7 @@ CREATE TABLE libro (
 -- PRESTAMO
 -- ------------------------------------------------------------
 CREATE TABLE prestamo (
+    -- Cada préstamo pertenece a un socio mediante la clave foránea id_socio.
     id_prestamo INT NOT NULL AUTO_INCREMENT,
     id_socio INT NOT NULL,
     fecha_prestamo DATE NOT NULL,
@@ -60,6 +68,7 @@ CREATE TABLE prestamo (
         ON DELETE RESTRICT
         ON UPDATE RESTRICT,
 
+    -- Los CHECK expresan reglas de dominio sobre estados y fechas.
     CONSTRAINT chk_prestamo_estado CHECK (
         estado IN ('activo', 'devuelto', 'cerrado_sin_devolver')
     ),
@@ -82,6 +91,8 @@ CREATE TABLE prestamo (
 -- DETALLE_PRESTAMO
 -- ------------------------------------------------------------
 CREATE TABLE detalle_prestamo (
+    -- Tabla asociativa entre préstamo y libro. Su clave primaria compuesta
+    -- evita que un mismo título aparezca dos veces dentro del mismo préstamo.
     id_prestamo INT NOT NULL,
     id_libro INT NOT NULL,
     cantidad INT NOT NULL,
@@ -99,6 +110,8 @@ CREATE TABLE detalle_prestamo (
 ) ENGINE = InnoDB;
 
 
+-- El índice funcional permite un único préstamo activo por socio. Los estados
+-- no activos producen NULL y MySQL admite varias entradas NULL en UNIQUE.
 CREATE UNIQUE INDEX uq_prestamo_socio_activo
 ON prestamo (
     (CASE

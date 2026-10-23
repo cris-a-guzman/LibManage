@@ -1,8 +1,12 @@
+# Pantalla de consulta y devolución de préstamos.
+# Coordina la interfaz Tkinter con PrestamoRepository, heredado de BaseFrame.
+# Guía: docs/estudio/README.md#reglas-de-negocio
 import tkinter as tk
 from tkinter import ttk, messagebox
 from views.components.base_frame import BaseFrame
 
 class GestionPrestamos(BaseFrame):
+    # Presenta préstamos, permite filtrarlos y registrar una devolución.
 
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
@@ -68,6 +72,9 @@ class GestionPrestamos(BaseFrame):
 
     
     def filtrar(self):
+        # Alterna entre todos los préstamos y los vencidos consultando MySQL.
+        # El nuevo estado se calcula antes de consultar; solo se conserva si la
+        # consulta termina correctamente.
         nuevo_estado = not self.solo_vencidos
 
         try:
@@ -104,6 +111,7 @@ class GestionPrestamos(BaseFrame):
 
 
     def actualizar_boton_devolver(self, event=None):
+        # Habilita la devolución únicamente para una fila de estado activo.
         seleccion = self.tabla.selection()
 
         if not seleccion:
@@ -125,6 +133,8 @@ class GestionPrestamos(BaseFrame):
             self.actualizar_tabla(self.prestamos_datos)
             return
 
+        # La comprensión busca en socio o libro sobre los datos ya cargados;
+        # no ejecuta una nueva consulta SQL.
         resultados = [
             p for p in self.prestamos_datos
             if texto in p[1].lower() or texto in p[2].lower()
@@ -143,6 +153,7 @@ class GestionPrestamos(BaseFrame):
 
     
     def marcar_devuelto(self):
+        # Confirma la acción, delega la devolución y refresca la tabla.
         seleccion = self.tabla.selection()
 
         if not seleccion:
@@ -180,9 +191,11 @@ class GestionPrestamos(BaseFrame):
 
 
     def registrar_prestamo(self):
+        # Navega hacia el formulario de alta de un préstamo.
         from views.prestamos_views.registrar_prestamo_view import RegistrarPrestamo
         self.controller.show_frame(RegistrarPrestamo)
         
     def volver_atras(self): #! Esto lo podriamos pasar a controller me parece
+        # Regresa a la pantalla principal sin modificar datos.
         from views.home_view.home_view import HomeView
         self.controller.show_frame(HomeView)

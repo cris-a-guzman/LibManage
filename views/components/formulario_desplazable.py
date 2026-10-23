@@ -1,10 +1,14 @@
-
+# Componente reutilizable para formularios más altos que la ventana disponible.
+# Un Canvas contiene el Frame real y una barra modifica su posición vertical.
+# Referencia: docs/estudio/README.md#tkinter-y-programación-dirigida-por-eventos
 import tkinter as tk
 from tkinter import ttk
 
 
+# Frame compuesto que expone `contenido` para que otras vistas agreguen widgets.
 class FormularioDesplazable(tk.Frame):
 
+    # Crea Canvas, Scrollbar y Frame interno y enlaza sus eventos de tamaño.
     def __init__(self, parent):
         super().__init__(parent)
 
@@ -52,11 +56,13 @@ class FormularioDesplazable(tk.Frame):
             fill="y"
         )
 
+    # Recalcula la región recorrible cuando cambia el tamaño del contenido.
     def actualizar_desplazamiento(self, event):
         self.canvas.configure(
             scrollregion=self.canvas.bbox("all")
         )
 
+    # Mantiene el Frame interno con el mismo ancho visible que el Canvas.
     def ajustar_ancho(self, event):
         self.canvas.itemconfigure(
             self.ventana,

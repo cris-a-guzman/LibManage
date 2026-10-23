@@ -1,7 +1,12 @@
+# Combobox especializado en filtrar opciones escritas por la persona usuaria.
+# Demuestra herencia de un widget y programación dirigida por eventos.
+# Referencia: docs/estudio/README.md#tkinter-y-programación-dirigida-por-eventos
 import tkinter as tk
 from tkinter import ttk
 
+# Extiende `ttk.Combobox` sin modificar su implementación base.
 class AutocompleteCombobox(ttk.Combobox):
+    # Recibe todas las opciones, las ordena y conserva una copia para futuros filtros.
     def set_completion_list(self, lista_opciones):
         """Establece la lista completa de opciones."""
         self._lista_completa = sorted(lista_opciones, key=str.lower)
@@ -9,6 +14,7 @@ class AutocompleteCombobox(ttk.Combobox):
 
         self.bind('<Return>', self._filtrar_opciones)
 
+    # Atiende Enter, compara el texto normalizado y reemplaza los valores visibles.
     def _filtrar_opciones(self, event):
         """Filtra las opciones del desplegable según el texto ingresado."""
 

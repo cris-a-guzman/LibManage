@@ -145,4 +145,3 @@ Son aspectos para estudiar, no correcciones aplicadas por esta rama:
 - No se observa el límite de diez títulos distintos por préstamo.
 - Hay textos con problemas históricos de codificación y nombres de interfaz inconsistentes. Se preservaron para no modificar el comportamiento ni el contenido original.
 - No existe una suite de pruebas automatizadas en `main` ni un archivo de dependencias verificable.
-

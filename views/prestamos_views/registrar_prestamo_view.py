@@ -1,3 +1,6 @@
+# Formulario de alta de préstamos con uno o más títulos.
+# Reúne validaciones de interfaz y entrega al repositorio los datos preparados.
+# Guía: docs/estudio/README.md#recorrido-representativo-registrar-un-préstamo
 import tkinter as tk
 from tkinter import ttk,messagebox
 from datetime import date, datetime
@@ -6,6 +9,7 @@ from views.components.base_frame import BaseFrame
 from views.components.formulario_desplazable import FormularioDesplazable
 
 class RegistrarPrestamo(BaseFrame):
+    # Permite seleccionar socio, libros, cantidades y fecha de devolución.
 
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
@@ -15,6 +19,8 @@ class RegistrarPrestamo(BaseFrame):
         self.dni_socios = self.ApiSocios.obtener_socios_dni()
         self.libros_catalogo = self.ApiLibros.obtener_disponibilidad_libros()
 
+        # Relaciona el texto visible del desplegable con el registro completo;
+        # solo incluye títulos con disponibilidad.
         self.opciones_libros = {
             f"[{int(libro['disponibles'])} disponibles] "
             f"{libro['titulo']} (ID {libro['id_libro']})": libro
@@ -23,6 +29,7 @@ class RegistrarPrestamo(BaseFrame):
         }
         self.socio_seleccionado = None
         self.libro_seleccionado = None
+        # Estado temporal del formulario: id_libro -> título y cantidad.
         self.libros_seleccionados = {}
 
         # Configuración del grid del contenedor principal
@@ -214,6 +221,7 @@ class RegistrarPrestamo(BaseFrame):
         self.btn_cancelar.grid(row=0, column=1, sticky="ew", padx=(5, 0), ipady=6)
 
     def _configurar_placeholder(self, widget, placeholder):
+        # Los eventos de foco retiran o restauran el texto orientativo.
         """Helper para reutilizar la lógica de placeholders en campos de texto/combos."""
         widget.insert(0, placeholder)
         widget.bind(
@@ -226,6 +234,7 @@ class RegistrarPrestamo(BaseFrame):
         )
 
     def al_seleccionar_socio(self, event):
+        # Recuerda el DNI elegido y actualiza la confirmación visual.
         dni_ingresado = self.combo_dni_socio.get().strip()
         if dni_ingresado and dni_ingresado != "Escribir DNI...":
             # Guardamos la referencia al socio seleccionado
@@ -235,6 +244,7 @@ class RegistrarPrestamo(BaseFrame):
             )
 
     def al_seleccionar_libro(self, event):
+        # Recupera el registro asociado con la opción visible elegida.
         opcion = self.combo_libro.get().strip()
 
         libro = self.opciones_libros.get(opcion)
@@ -254,6 +264,7 @@ class RegistrarPrestamo(BaseFrame):
         )
 
     def agregar_libro(self):
+        # Valida y agrega un libro al estado temporal y al Treeview.
         libro = self.libro_seleccionado
 
         if not libro:
@@ -330,6 +341,7 @@ class RegistrarPrestamo(BaseFrame):
         )
 
     def quitar_libro(self):
+        # Elimina el título elegido de la tabla y del estado temporal.
         seleccion = self.tabla_libros.selection()
 
         if not seleccion:
@@ -345,6 +357,7 @@ class RegistrarPrestamo(BaseFrame):
         self.tabla_libros.delete(seleccion[0])
     
     def confirmar_prestamo(self):
+        # Valida el formulario y solicita al repositorio la transacción.
         if not self.socio_seleccionado:
             messagebox.showwarning(
                 "Atención",
@@ -384,6 +397,7 @@ class RegistrarPrestamo(BaseFrame):
             return
 
         # Preparar los datos para el repositorio
+        # Adaptación al formato esperado: [(id_libro, cantidad), ...].
         libros = [
             (id_libro, datos["cantidad"])
             for id_libro, datos in self.libros_seleccionados.items()
@@ -411,5 +425,6 @@ class RegistrarPrestamo(BaseFrame):
         self.cancelar()
 
     def cancelar(self):
+        # Descarta el estado de pantalla al volver a la gestión de préstamos.
         from views.prestamos_views.gestion_prestamos_view import GestionPrestamos
         self.controller.show_frame(GestionPrestamos)

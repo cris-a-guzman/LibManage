@@ -1,10 +1,15 @@
-# repositories/prestamo_repository.py
+# Acceso a datos y reglas de registro/devolución de préstamos.
+# Este archivo concentra la lógica más sensible: disponibilidad y escritura atómica.
+# Referencias: docs/estudio/README.md#persistencia-y-crud y
+# docs/estudio/README.md#reglas-de-negocio
 from datetime import date
 from repositories.base_repository import BaseRepository
 from repositories.conexion import obtener_conexion
 
+# Repositorio especializado en préstamos y la relación con sus libros.
 class PrestamoRepo(BaseRepository):
     
+    # Cuenta préstamos cuyo estado es exactamente `activo`.
     def cantidad_prestamos_activos(self):
         consulta = """
             SELECT count(*) as prestamos_activos FROM prestamo where estado = "activo"
@@ -13,6 +18,8 @@ class PrestamoRepo(BaseRepository):
         print(resultado)
         return resultado[0]['prestamos_activos'] if resultado else 0
     
+    # Cuenta estados considerados finalizados por esta consulta.
+    # La diferencia con `cerrado_sin_devolver` se documenta en la guía.
     def cantidad_prestamos_finalizados(self):
         consulta = """
             SELECT count(*) as prestamos_finalizados FROM prestamo WHERE estado = 'cerrado' OR estado = 'devuelto'
@@ -20,6 +27,7 @@ class PrestamoRepo(BaseRepository):
         resultado = self._ejecutar_consulta(consulta)
         return resultado[0]['prestamos_finalizados'] if resultado else 0
     
+    # Cuenta préstamos sin fecha real; el método no compara con la fecha estimada.
     def cantidad_prestamos_atraso(self):
         consulta = """
             SELECT count(*) AS cantidad FROM prestamo where fecha_devolucion_real is null
@@ -27,6 +35,8 @@ class PrestamoRepo(BaseRepository):
         resultado = self._ejecutar_consulta(consulta)
         return resultado[0]['cantidad'] if resultado else 0
 
+    # Devuelve filas para el Treeview y, opcionalmente, solo activos vencidos.
+    # El booleano se transforma en 0/1 para activar o anular el filtro SQL.
     def listar_prestamos(self, solo_vencidos=False):
         consulta = """
             SELECT
@@ -54,6 +64,8 @@ class PrestamoRepo(BaseRepository):
         """
         return self._ejecutar_consulta(consulta, (int(solo_vencidos), date.today()), dictionary=False)
 
+    # Marca un préstamo activo como devuelto en la fecha actual.
+    # Devuelve True únicamente cuando MySQL modificó una fila.
     def devolver_prestamo(self, id_prestamo):
         consulta = """
             UPDATE prestamo
@@ -66,6 +78,7 @@ class PrestamoRepo(BaseRepository):
         resultado = self._ejecutar_escritura(consulta, (id_prestamo,))
         return resultado["rowcount"] > 0
     
+    # Adaptador para registrar un ejemplar usando la operación múltiple.
     def crear_prestamo(self, dni_socio, id_libro, fecha_devolucion):
         return self.crear_prestamo_multiple(
             dni_socio=dni_socio,
@@ -74,6 +87,8 @@ class PrestamoRepo(BaseRepository):
         )
 
 
+    # Registra varios títulos en una transacción. Recibe DNI, tuplas
+    # `(id_libro, cantidad)` y fecha estimada; devuelve el id generado.
     def crear_prestamo_multiple(self, dni_socio, libros, fecha_devolucion):
         # libros: [(id_libro, cantidad), ...]
         if not libros:
@@ -83,6 +98,7 @@ class PrestamoRepo(BaseRepository):
             raise ValueError("La devolución no puede ser anterior a hoy.")
 
         # Validar los libros y sus cantidades
+        # El diccionario también permite detectar un mismo título repetido.
         seleccion = {}
 
         for id_libro, cantidad in libros:
@@ -107,6 +123,7 @@ class PrestamoRepo(BaseRepository):
         cursor = None
 
         try:
+            # Las comprobaciones y escrituras se confirman o revierten como una unidad.
             conexion.start_transaction()
             cursor = conexion.cursor(dictionary=True)
 
@@ -124,6 +141,7 @@ class PrestamoRepo(BaseRepository):
                 raise ValueError("El socio no existe o está dado de baja.")
 
             # Bloquear todos los libros en un orden fijo
+            # Se bloquean filas en orden fijo para leer existencias estables.
             existencias = {}
 
             for id_libro in sorted(seleccion):
@@ -158,6 +176,7 @@ class PrestamoRepo(BaseRepository):
                       )
                 """, (id_libro,))
 
+                # La disponibilidad se recalcula dentro de la transacción.
                 ocupados = cursor.fetchone()["ocupados"]
                 disponibles = existencias[id_libro] - ocupados
 
@@ -178,6 +197,7 @@ class PrestamoRepo(BaseRepository):
                 VALUES (%s, CURDATE(), %s, 'activo')
             """, (socio["id_socio"], fecha_devolucion))
 
+            # La clave generada enlaza la cabecera con cada detalle posterior.
             id_prestamo = cursor.lastrowid
 
             # Registrar todos los libros asociados

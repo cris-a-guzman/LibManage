@@ -1,9 +1,14 @@
+# Ventana raíz y controlador de navegación de la interfaz.
+# Conserva un contenedor común y reemplaza su pantalla hija cuando cambia la vista.
+# Referencia: docs/estudio/README.md#tkinter-y-programación-dirigida-por-eventos
 import tkinter as tk
 from tkinter import ttk
 from views.login_view.login_view import login_view
 
+# Hereda de `tk.Tk`: cada instancia representa la ventana principal de LibManage.
 class MainWindow(tk.Tk):
     
+    # Configura la ventana, crea el contenedor e inicia mostrando el login.
     def __init__(self):
         super().__init__()
         
@@ -19,6 +24,8 @@ class MainWindow(tk.Tk):
         
         self.show_frame(login_view)
         
+    # Recibe una clase de vista y datos opcionales; destruye la vista anterior
+    # y crea una nueva dentro del mismo contenedor.
     def show_frame(self, frame_class, datos=None):
         
         for widget in self.container.winfo_children():
@@ -31,6 +38,7 @@ class MainWindow(tk.Tk):
             frame = frame_class(self.container, self)
             frame.pack(fill="both", expand=True)
         
+    # Construye el encabezado visual compartido por todas las pantallas.
     def _crear_header(self):
         header = ttk.Frame(self, style="Header.TFrame")
         header.pack(fill="x")
@@ -49,6 +57,7 @@ class MainWindow(tk.Tk):
                   text="Gestor de libros y prestamos",
                   style="HeaderSubTitle.TLabel").pack(pady=(2,0))
         
+    # Calcula coordenadas a partir del tamaño de pantalla y fija la geometría inicial.
     def centrar_pantalla(self):
         """Funcion para sentrar la aplicacion en el medio de la pantalla"""
         ancho = 800

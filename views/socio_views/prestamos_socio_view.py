@@ -1,10 +1,12 @@
-
+# Vista de detalle que combina datos del socio y su historial de préstamos.
+# Guía: docs/estudio/README.md#modelo-relacional-y-sql
 import tkinter as tk
 from tkinter import ttk, messagebox
 from views.components.base_frame import BaseFrame
 
 
 class VistaPrestamosSocio(BaseFrame):
+    # Consulta un socio por id y representa sus préstamos en una tabla.
 
     def __init__(self, parent, controller, id_socio):
         super().__init__(parent, controller)
@@ -14,6 +16,8 @@ class VistaPrestamosSocio(BaseFrame):
         self.socio = self.ApiSocios.obtener_socio_por_id(id_socio)
         self.prestamos_socio = self.ApiSocios.listar_prestamos_socio(id_socio)
 
+        # Si la consulta principal no encuentra al socio, no hay ficha válida
+        # para construir y se regresa a la pantalla anterior.
         if not self.socio:
             messagebox.showerror("Error", "No se encontró el socio.")
             self.volver_atras()
@@ -190,8 +194,10 @@ class VistaPrestamosSocio(BaseFrame):
         self.actualizar_tabla(self.prestamos_socio)
 
     def actualizar_tabla(self, prestamos_socio):
+        # Reemplaza filas, alterna estilos y actualiza el total mostrado.
         self.tabla.delete(*self.tabla.get_children())
 
+        # enumerate aporta el índice usado para alternar colores par/impar.
         for indice, prestamo in enumerate(prestamos_socio):
             self.tabla.insert(
                 "",
@@ -213,5 +219,6 @@ class VistaPrestamosSocio(BaseFrame):
         )
 
     def volver_atras(self):
+        # Regresa a la gestión de socios.
         from views.socio_views.gestion_socios_view import GestionSocios
         self.controller.show_frame(GestionSocios)

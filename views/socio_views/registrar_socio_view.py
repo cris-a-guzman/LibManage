@@ -1,8 +1,12 @@
+# Formulario preliminar para registrar o editar socios.
+# En main conserva textos y acciones de maqueta: no invoca SocioRepository.
+# Esta diferencia entre intención e implementación se documenta en la guía.
 import tkinter as tk
 from tkinter import messagebox
 
 
 class RegistrarSocio(tk.Frame):
+    # Construye el formulario de socio y sus acciones todavía provisorias.
     def __init__(self, parent, controller, socio_datos=None):
         super().__init__(parent)
         self.controller = controller
@@ -71,6 +75,7 @@ class RegistrarSocio(tk.Frame):
         self.btn_eliminar.grid(row=0, column=2, padx=5, ipady=3, sticky="ew")
 
     def crear_campo(self, placeholder, fila):
+        # Crea un Entry con texto orientativo y lo ubica en la fila indicada.
         entry = tk.Entry(self.frame_formulario, justify="center", width=40)
         entry.insert(0, placeholder)
         entry.grid(row=fila, column=0, pady=8, ipady=6)
@@ -79,6 +84,7 @@ class RegistrarSocio(tk.Frame):
         return entry
 
     def cargar_datos(self):
+        # Carga datos opcionales según las claves que espera esta maqueta.
         if self.socio_datos:
             self.set_entry(self.txt_titulo, self.socio_datos.get("titulo", ""))
             self.set_entry(self.txt_autor, self.socio_datos.get("autor", ""))
@@ -86,25 +92,30 @@ class RegistrarSocio(tk.Frame):
             self.set_entry(self.txt_cantidad, self.socio_datos.get("cantidad", ""))
 
     def set_entry(self, entry, valor):
+        # Reemplaza el contenido de un campo cuando existe un valor.
         if valor:
             entry.delete(0, tk.END)
             entry.insert(0, valor)
 
     def guardar_cambios(self):
+        # Acción provisoria: muestra un mensaje y vuelve sin persistir.
         from views.socio_views.gestion_socios_view import GestionSocios
         messagebox.showinfo(title="Libro Guardado", message="Libro guardado exitosamente.")
         self.controller.show_frame(GestionSocios)
 
     def descartar(self):
+        # Vuelve a la gestión sin aplicar cambios.
         from views.socio_views.gestion_socios_view import GestionSocios
         messagebox.showinfo(title="Edicion Descartad", message="Edicion Descartada exitosamente.\n Volviendo atras...")
         self.controller.show_frame(GestionSocios)
 
     def eliminar_socio(self):
+        # Solicita confirmación, pero actualmente no modifica la base.
         if messagebox.askyesno("Confirmar", "¿Deseas eliminar este Socio?"):
             messagebox.showinfo(title="Socio eliminado", message="Socio eliminado exitosamente.")
             
     def ver_prestamos(self):
+        # Intenta abrir la vista de préstamos desde el formulario.
         from views.socio_views.prestamos_socio_view import VistaPrestamosSocio
         self.controller.show_frame(VistaPrestamosSocio)
             

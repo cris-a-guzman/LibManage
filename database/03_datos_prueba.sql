@@ -10,11 +10,13 @@
 -- Catalogo: 30 titulos reales, ISBN y ediciones verificados con fuentes.
 -- Socios, prestamos, cantidades de ejemplares y bajas son ficticios.
 -- Los IDs se fijan para relacionar los registros de forma estable.
+-- Guía: docs/estudio/README.md#reglas-de-negocio
 -- ============================================================
 
 USE libmanage;
 SET NAMES utf8mb4;
 
+-- La transacción agrupa todas las inserciones: COMMIT las confirma juntas.
 START TRANSACTION;
 
 -- 1. SOCIOS: 8 vigentes y 2 dados de baja.
@@ -96,7 +98,9 @@ VALUES
     (19, 9, '2026-09-02', '2026-09-16', NULL, 'cerrado_sin_devolver', 'Cerrado antes de la baja del socio.'),
     (20, 10, '2026-09-12', '2026-09-26', NULL, 'cerrado_sin_devolver', 'Cerrado antes de la baja del socio y del libro.');
 
--- 4. DETALLES: al menos un libro por prestamo; maximo 10 titulos.
+-- 4. DETALLES: materializan la relación muchos-a-muchos entre préstamos y
+-- libros; la columna cantidad permite incluir más de un ejemplar por título.
+-- Al menos un libro por prestamo; maximo 10 titulos.
 -- Las copias en activos + cerrados sin devolver no superan el stock.
 INSERT INTO detalle_prestamo (id_prestamo, id_libro, cantidad)
 VALUES
@@ -151,4 +155,5 @@ VALUES
     (20, 20, 2),
     (20, 30, 1);
 
+-- Confirma de manera permanente el conjunto completo de datos de prueba.
 COMMIT;

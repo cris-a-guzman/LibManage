@@ -7,6 +7,8 @@
 --
 -- La plantilla .example (este archivo) SI puede versionarse porque no contiene
 -- contrasenas reales.
+-- Concepto: separación entre roles (conjunto de permisos) y usuarios concretos.
+-- Guía: docs/estudio/README.md#modelo-relacional-y-sql
 -- ============================================================
 
 -- '%' permite la conexion TCP desde el host a MySQL en Docker.
@@ -19,7 +21,8 @@ CREATE USER 'administrador'@'%'
 CREATE USER 'usuario_sistema'@'%'
     IDENTIFIED BY 'CAMBIAR_POR_CLAVE_APP_DISTINTA';
 
--- Asignar los roles creados por 02_seguridad.sql.
+-- Asignar los roles creados por 02_seguridad.sql: GRANT vincula cada cuenta
+-- con el conjunto de privilegios que necesita para su responsabilidad.
 GRANT 'rol_libmanage_admin' TO 'administrador'@'%';
 GRANT 'rol_libmanage_app' TO 'usuario_sistema'@'%';
 
