@@ -8,8 +8,8 @@ from views.components.base_frame import BaseFrame
 
 class HomeView(BaseFrame):
 
-    def __init__(self, parent, controller):
-        super().__init__(parent, controller)
+    def __init__(self, parent, controller, conexion):
+        super().__init__(parent, controller, conexion)
         
         datos_libro = [
             ("Cantidad de Libros:", self.ApiLibros.cantidad_total_ejemplares()),

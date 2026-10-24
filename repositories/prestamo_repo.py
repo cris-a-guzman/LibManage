@@ -10,7 +10,7 @@ class PrestamoRepo(BaseRepository):
             SELECT count(*) as prestamos_activos FROM prestamo where estado = "activo"
         """
         resultado = self._ejecutar_consulta(consulta)
-        print(resultado)
+
         return resultado[0]['prestamos_activos'] if resultado else 0
     
     def cantidad_prestamos_finalizados(self):

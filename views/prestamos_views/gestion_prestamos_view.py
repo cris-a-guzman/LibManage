@@ -4,8 +4,8 @@ from views.components.base_frame import BaseFrame
 
 class GestionPrestamos(BaseFrame):
 
-    def __init__(self, parent, controller):
-        super().__init__(parent, controller)
+    def __init__(self, parent, controller, conexion):
+        super().__init__(parent, controller, conexion)
         self.controller = controller
         self.solo_vencidos = False   
 

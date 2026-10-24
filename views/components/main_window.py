@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
-from views.login_view.login_view import login_view
+from tkinter import ttk, messagebox
+from repositories.conexion import obtener_conexion
+from views.home_view.home_view import HomeView
 
 class MainWindow(tk.Tk):
     
@@ -12,12 +14,21 @@ class MainWindow(tk.Tk):
         self.centrar_pantalla()
         self.resizable(True, True)
         
+        try:
+            self.conexion = obtener_conexion()
+        except ConnectionError as e:
+            # Mostramos un pop-up amigable al usuario
+            messagebox.showerror("Error Critico de conexion","No se pudo establecer la conexion a la base de datos, verifique el servicio o mysql instalado")
+            messagebox.showerror("Error Crítico de Base de Datos", str(e))
+            self.controller.destroy()
+            return
+        
         self._crear_header()
         
         self.container = ttk.Frame(self)
         self.container.pack(fill="both", expand=True)
         
-        self.show_frame(login_view)
+        self.show_frame(HomeView)
         
     def show_frame(self, frame_class, datos=None):
         
@@ -25,10 +36,10 @@ class MainWindow(tk.Tk):
             widget.destroy()
         
         if datos is not None:
-            frame = frame_class(self.container, self, datos)
+            frame = frame_class(self.container, self, self.conexion, datos)
             frame.pack(fill="both", expand=True)
         else:
-            frame = frame_class(self.container, self)
+            frame = frame_class(self.container, self, self.conexion)
             frame.pack(fill="both", expand=True)
         
     def _crear_header(self):

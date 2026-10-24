@@ -4,8 +4,8 @@ from views.components.base_frame import BaseFrame
 
 class HistorialPrestamosSocio(BaseFrame):
 
-    def __init__(self, parent, controller, datos):
-        super().__init__(parent, controller)
+    def __init__(self, parent, controller, conexion, datos):
+        super().__init__(parent, controller, conexion)
         self.controller = controller
         self.datos_socio = datos
         self.datos_prestamos = {}

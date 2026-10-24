@@ -6,8 +6,8 @@ from views.components.base_frame import BaseFrame
 
 class VistaPrestamosSocio(BaseFrame):
 
-    def __init__(self, parent, controller, id_socio):
-        super().__init__(parent, controller)
+    def __init__(self, parent, controller, conexion, id_socio):
+        super().__init__(parent, controller, conexion)
         self.controller = controller
 
         # ? Traer datos del socio y sus préstamos de la base de datos mysql

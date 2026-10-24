@@ -3,8 +3,8 @@ from tkinter import ttk, messagebox
 from views.components.base_frame import BaseFrame
 
 class GestionLibros(BaseFrame):
-    def __init__(self, parent, controller):
-        super().__init__(parent, controller)
+    def __init__(self, parent, controller, conexion):
+        super().__init__(parent, controller, conexion)
         self.controller = controller
             #? Frame principal
         

@@ -7,8 +7,8 @@ from views.components.formulario_desplazable import FormularioDesplazable
 
 class RegistrarPrestamo(BaseFrame):
 
-    def __init__(self, parent, controller):
-        super().__init__(parent, controller)
+    def __init__(self, parent, controller, conexion):
+        super().__init__(parent, controller, conexion)
         self.controller = controller
 
         # Carga de datos desde la API/Repositories

@@ -5,8 +5,8 @@ from views.components.formulario_desplazable import FormularioDesplazable
 
 
 class ModificarLibro(BaseFrame):
-    def __init__(self, parent, controller, libro_datos=None):
-        super().__init__(parent, controller)
+    def __init__(self, parent, controller, conexion, libro_datos=None):
+        super().__init__(parent, controller, conexion)
         self.controller = controller
         self.libro_datos = libro_datos or {}
 

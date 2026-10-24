@@ -1,24 +1,16 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from repositories.conexion import obtener_conexion
+
 from repositories.libro_repo import LibroRepo
 from repositories.prestamo_repo import PrestamoRepo
 from repositories.socio_repo import SociosRepo
 
 class BaseFrame(tk.Frame):
     
-    def __init__(self, parent, controller):
+    def __init__(self, parent, controller, conexion):
         super().__init__(parent)
         self.controller = controller
-        try:
-            self.conexion = obtener_conexion()
-        except ConnectionError as e:
-            # Mostramos un pop-up amigable al usuario
-            messagebox.showerror("Error Critico de conexion","No se pudo establecer la conexion a la base de datos, verifique el servicio o mysql instalado")
-            messagebox.showerror("Error Crítico de Base de Datos", str(e))
-            self.controller.destroy()
-            return
-
+        self.conexion = conexion
         self.ApiLibros= LibroRepo(self.conexion)
         self.ApiPrestamos = PrestamoRepo(self.conexion)
         self.ApiSocios = SociosRepo(self.conexion)

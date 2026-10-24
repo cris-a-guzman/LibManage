@@ -3,11 +3,11 @@ from tkinter import messagebox
 
 
 class RegistrarSocio(tk.Frame):
-    def __init__(self, parent, controller, socio_datos=None):
+    def __init__(self, parent, controller, conexion, socio_datos=None):
         super().__init__(parent)
         self.controller = controller
         self.socio_datos = socio_datos or {}
-
+        self.conexion = conexion
         self.rowconfigure(0, weight=0)
         self.rowconfigure(1, weight=1)
         self.columnconfigure(0, weight=1)
