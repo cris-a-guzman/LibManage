@@ -28,9 +28,14 @@ class GestionSocios(BaseFrame):
         self.crear_boton_filtrar(self.filtrar)
         
         #? Creando el treeview
-        columnas = ("id_socio", "dni", "nombre", "apellido")
-        ancho = (40,80,140,140)
-        self.crear_treeview(self.frame_central, columnas, ancho)
+        columnas = {
+            "id_socio":40,
+            "dni":80,
+            "nombre":140,
+            "apellido":140
+        }
+
+        self.crear_treeview(self.frame_central, columnas)
         
         #? Ver prestamos
         self.crear_boton_ver("Préstamos / Historial", self.ver_prestamos)
