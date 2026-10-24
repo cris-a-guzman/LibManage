@@ -1,50 +1,56 @@
 import tkinter as tk
 from tkinter import ttk
-from views.login_view.login_view import login_view
+from views.home_view.home_view import HomeView
 
 class MainWindow(tk.Tk):
-    
+    """Ventana principal del programa"""
     def __init__(self):
         super().__init__()
         
         # Configuracion de la ventana
-        self.title("LibManage")
-        self.centrar_pantalla()
-        self.resizable(True, True)
+        self.title("LibManage") #* Titulo
+        self.centrar_pantalla() #* Llama a la funcion para centrar la pantalla
+        self.resizable(True, True) #* No permite el usuario modifique el tamaño de la ventana
         
         self._crear_header()
         
-        self.container = ttk.Frame(self)
-        self.container.pack(fill="both", expand=True)
+        self.container = ttk.Frame(self) #* Crea el frame el cual vamos a ir llenando de elementos
+        self.container.pack(fill="both", expand=True) #* lo ubica en la ventana principal
         
-        self.show_frame(login_view)
+        self.show_frame(HomeView) #* Esto manda a mostrar la pantalla de home_view
         
     def show_frame(self, frame_class, datos=None):
+        """Esta funcion refresca la ventana principal y ubica los elementos de la pantalla que 
+        Queremos mostrar realmente
+        Seria lo que se hace por detras de cuando hacemos INICIO -> GESTION_PRESTAMO"""
         
-        for widget in self.container.winfo_children():
-            widget.destroy()
+        for widget in self.container.winfo_children(): #? Recorre todos los elementos dentro
+                                                        #? De la ventana y elimina los elementos
+                                                        #? Para dejarla limpia y poder meter los nuevos elementos de la pantalla elegida
+            widget.destroy() #* Esto los borra, uno por uno
         
-        if datos is not None:
+        if datos is not None: #* Si tenemos datos entonces se lo pasamos a la respectiva pantalla para que lo muestre
             frame = frame_class(self.container, self, datos)
             frame.pack(fill="both", expand=True)
-        else:
+        else: #* Si no pasamos datos entonces simplemente mostramos la pantalla
             frame = frame_class(self.container, self)
             frame.pack(fill="both", expand=True)
         
     def _crear_header(self):
+        """Se crea el Header de la pantalla que vamos a mostrar"""
         header = ttk.Frame(self, style="Header.TFrame")
         header.pack(fill="x")
 
         inner = ttk.Frame(header, style="Header.TFrame")
         inner.pack(fill="x", ipadx=24, ipady=28)
         
-        #Titulo - Esto tambien se podria factorizar?
+        #* Titulo 
         ttk.Label(
             inner,
             text="LibManage",style="HeaderTitle.TLabel"
         ).pack()
         
-        #subtitulo
+        #* subtitulo
         ttk.Label(inner,
                   text="Gestor de libros y prestamos",
                   style="HeaderSubTitle.TLabel").pack(pady=(2,0))

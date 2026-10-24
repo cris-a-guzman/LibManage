@@ -89,7 +89,7 @@ class BaseFrame(tk.Frame):
             row=2, column=0, columnspan=2, sticky="nsew", pady=10
         )
 
-        self.frame_central.rowconfigure(2, weight=1)
+        frame_parent.rowconfigure(2, weight=1)
         self.frame_tabla.rowconfigure(0, weight=1)
         self.frame_tabla.columnconfigure(0, weight=1)
 
