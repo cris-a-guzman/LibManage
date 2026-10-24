@@ -1,4 +1,3 @@
-# repositories/libro_repository.py
 from repositories.base_repository import BaseRepository
 
 class LibroRepo(BaseRepository):

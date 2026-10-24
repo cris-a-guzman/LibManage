@@ -75,7 +75,7 @@ class PrestamoRepo(BaseRepository):
 
 
     def crear_prestamo_multiple(self, dni_socio, libros, fecha_devolucion):
-        # libros: [(id_libro, cantidad), ...]
+
         if not libros:
             raise ValueError("Debés seleccionar al menos un libro.")
 
@@ -99,16 +99,13 @@ class PrestamoRepo(BaseRepository):
 
             seleccion[id_libro] = cantidad
 
-        conexion = obtener_conexion()
-
-        if conexion is None:
-            raise ConnectionError("No se pudo conectar a MySQL")
-
         cursor = None
 
         try:
-            conexion.start_transaction()
-            cursor = conexion.cursor(dictionary=True)
+            if self.conexion.in_transaction:
+                self.conexion.rollback()
+            self.conexion.start_transaction()
+            cursor = self.conexion.cursor(dictionary=True)
 
             # Buscar el socio mediante su DNI
             cursor.execute("""
@@ -131,7 +128,7 @@ class PrestamoRepo(BaseRepository):
                     SELECT cantidad_total
                     FROM libro
                     WHERE id_libro = %s
-                      AND fecha_baja IS NULL
+                    AND fecha_baja IS NULL
                     FOR UPDATE
                 """, (id_libro,))
 
@@ -152,10 +149,10 @@ class PrestamoRepo(BaseRepository):
                     JOIN prestamo p
                         ON dp.id_prestamo = p.id_prestamo
                     WHERE dp.id_libro = %s
-                      AND p.estado IN (
-                          'activo',
-                          'cerrado_sin_devolver'
-                      )
+                    AND p.estado IN (
+                        'activo',
+                        'cerrado_sin_devolver'
+                    )
                 """, (id_libro,))
 
                 ocupados = cursor.fetchone()["ocupados"]
@@ -191,15 +188,13 @@ class PrestamoRepo(BaseRepository):
                     VALUES (%s, %s, %s)
                 """, (id_prestamo, id_libro, cantidad))
 
-            conexion.commit()
+            self.conexion.commit()
             return id_prestamo
 
         except Exception:
-            conexion.rollback()
+            self.conexion.rollback()
             raise
 
         finally:
             if cursor is not None:
                 cursor.close()
-            conexion.close()
-
