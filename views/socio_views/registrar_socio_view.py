@@ -92,7 +92,7 @@ class RegistrarSocio(tk.Frame):
 
     def guardar_cambios(self):
         from views.socio_views.gestion_socios_view import GestionSocios
-        messagebox.showinfo(title="Libro Guardado", message="Libro guardado exitosamente.")
+        messagebox.showinfo(title="Socio Registrado", message="Socio registrado exitosamente.")
         self.controller.show_frame(GestionSocios)
 
     def descartar(self):
