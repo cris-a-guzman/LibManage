@@ -69,3 +69,15 @@ class SociosRepo(BaseRepository):
             ORDER BY p.fecha_prestamo DESC
         """
         return self._ejecutar_consulta(consulta, (id_socio,))
+    
+    def registrar_socio(self, datos_socio):
+        consulta = """
+            INSERT INTO socio (dni, nombre, apellido, fecha_asociacion, telefono)
+            VALUES (%s, %s, %s, %s, %s)
+        """
+        resultado = self._ejecutar_escritura(consulta, (datos_socio['dni'],
+                                                        datos_socio['nombre'],
+                                                        datos_socio['apellido'],
+                                                        datos_socio['fecha_asociacion'],
+                                                        datos_socio['telefono']))
+        return resultado["lastrowid"]
