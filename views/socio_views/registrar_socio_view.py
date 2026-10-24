@@ -1,16 +1,18 @@
 import tkinter as tk
 from tkinter import messagebox
+from views.components.base_frame import BaseFrame
+from datetime import date, datetime
 
-
-class RegistrarSocio(tk.Frame):
+class RegistrarSocio(BaseFrame):
     def __init__(self, parent, controller, conexion, socio_datos=None):
-        super().__init__(parent)
+        super().__init__(parent, controller, conexion)
         self.controller = controller
         self.socio_datos = socio_datos or {}
         self.conexion = conexion
         self.rowconfigure(0, weight=0)
         self.rowconfigure(1, weight=1)
         self.columnconfigure(0, weight=1)
+        #! print(socio_datos) Esto va en una nueva pantalla modificar_socio
 
         self.titulo_label = tk.Label(
             self, 
@@ -33,10 +35,11 @@ class RegistrarSocio(tk.Frame):
         self.frame_formulario.grid(row=0, column=0)
 
         #?Textos
-        self.txt_titulo = self.crear_campo("Nombre y Apellido", 0)
-        self.txt_autor = self.crear_campo("DNI", 1)
-        self.txt_anio = self.crear_campo("Telefono", 2)
-        self.txt_cantidad = self.crear_campo("Fecha de Asociacion", 3)
+        self.txt_nombre = self.crear_campo("Nombre", 0)
+        self.txt_apellido = self.crear_campo("Apellido", 1)
+        self.txt_dni = self.crear_campo("DNI", 2)
+        self.txt_telefono = self.crear_campo("Telefono", 3)
+        self.txt_fecha_asociacion = self.crear_campo("Fecha de Asociacion", 4)
 
         # Ver prestamos del socio. boton
         if self.socio_datos:
@@ -80,10 +83,11 @@ class RegistrarSocio(tk.Frame):
 
     def cargar_datos(self):
         if self.socio_datos:
-            self.set_entry(self.txt_titulo, self.socio_datos.get("titulo", ""))
-            self.set_entry(self.txt_autor, self.socio_datos.get("autor", ""))
-            self.set_entry(self.txt_anio, self.socio_datos.get("anio", ""))
-            self.set_entry(self.txt_cantidad, self.socio_datos.get("cantidad", ""))
+            self.set_entry(self.txt_nombre, self.socio_datos.get("nombre", ""))
+            self.set_entry(self.txt_dni, self.socio_datos.get("dni", ""))
+            self.set_entry(self.txt_telefono, self.socio_datos.get("telefono", ""))
+            self.set_entry(self.txt_fecha_asociacion, self.socio_datos.get("fecha_asociacion", ""))
+            
 
     def set_entry(self, entry, valor):
         if valor:
@@ -92,7 +96,60 @@ class RegistrarSocio(tk.Frame):
 
     def guardar_cambios(self):
         from views.socio_views.gestion_socios_view import GestionSocios
-        messagebox.showinfo(title="Socio Registrado", message="Socio registrado exitosamente.")
+        placeholders = ["Nombre", "Apellido", "DNI", "Telefono", "Fecha de Asociacion"]
+        
+        datos_socio = {
+            "nombre": self.txt_nombre.get().strip(),
+            "apellido": self.txt_apellido.get().strip(),
+            "telefono": self.txt_telefono.get().strip(),
+            "dni":self.txt_dni.get().strip(),
+            "fecha_asociacion":self.txt_fecha_asociacion.get().strip()
+        }
+        for i in datos_socio.values():
+            if i in placeholders:
+                messagebox.showwarning(
+                                "Datos incompletos",
+                                "Los datos del socio son obligatorios, intentelo de nuevo."
+                            )
+                return
+
+        if not datos_socio['dni'].isdigit():
+            messagebox.showwarning(
+                "D.N.I invalido",
+                "El DNI ingresado no corresponde a un DNI valido, intentelo de nuevo"
+            )
+            return
+        
+        if not datos_socio['telefono'].isdigit():
+            messagebox.showwarning(
+                    "Telefono invalido",
+                    "El telefono ingresado no corresponde a un telefono valido, intentelo de nuevo agregando solo los numeros (el sistema no acepta caracteres no numericos)"
+                )
+            return
+        
+        try:
+            fecha_asociacion = datetime.strptime(
+                self.txt_fecha_asociacion.get().strip(),
+                "%d/%m/%Y"
+            ).date()
+
+            datos_socio['fecha_asociacion'] = fecha_asociacion
+
+        except ValueError:
+            messagebox.showwarning(
+                "Fecha inválida",
+                "Ocurrio un problema ingresando la fecha del socio, intentelo de nuevo"
+            )
+            return
+        socios_activos = self.ApiSocios.obtener_socios_dni()
+        if datos_socio['dni'] in socios_activos:
+            messagebox.showwarning(
+                    "DNI ya registrado",
+                    f"El socio{datos_socio['dni']} ya se encuentra en la base de datos"
+                )
+            return
+        resultado = self.ApiSocios.registrar_socio(datos_socio)
+        messagebox.showinfo(title="Socio Registrado", message=f"Socio registrado exitosamente.{resultado}")
         self.controller.show_frame(GestionSocios)
 
     def descartar(self):
