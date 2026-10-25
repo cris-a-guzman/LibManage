@@ -40,9 +40,9 @@ class SociosRepo(BaseRepository):
         """
         return self._ejecutar_consulta(consulta)
 
-    def obtener_socio_por_id(self, id_socio):
+    def obtener_socio_por_id(self, id_socio): #! Buscar a donde mas se usa esto
         consulta = """
-            SELECT id_socio, dni, nombre, apellido
+            SELECT id_socio, dni, nombre, apellido, fecha_asociacion, telefono
             FROM socio
             WHERE id_socio = %s
         """
@@ -81,3 +81,21 @@ class SociosRepo(BaseRepository):
                                                         datos_socio['fecha_asociacion'],
                                                         datos_socio['telefono']))
         return resultado["lastrowid"]
+    
+    def baja_socio(self, id_socio):
+        consulta = """
+            UPDATE socio SET fecha_baja = NOW() WHERE id_socio = %s;
+        """
+        
+        resultado = self._ejecutar_escritura(consulta, (id_socio,))
+        return resultado['rowcount'] > 0
+    
+    def tiene_prestamos_activos(self, id_socio):
+        consulta = """
+            SELECT COUNT(*) AS total
+            FROM prestamo
+            WHERE id_socio = %s AND estado = 'activo'
+        """
+        resultado = self._ejecutar_consulta(consulta, (id_socio,), fetchone=True)
+        return resultado['total'] > 0 if resultado else False
+        

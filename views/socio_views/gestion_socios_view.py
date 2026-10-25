@@ -37,19 +37,23 @@ class GestionSocios(BaseFrame):
 
         self.crear_treeview(self.frame_central, columnas)
         
-        #? Ver prestamos
-        self.crear_boton_ver("Préstamos / Historial", self.ver_prestamos)
 
         #? Boton Crear (Agregar socio)
-        self.crear_boton_crear("Registrar Socio", self.registrar_socio)
+        self.crear_boton_ver("Registrar Socio", self.registrar_socio, 0)
+        
+        #? Boton Modificar Socio
+        self.crear_boton_ver("Modificar Socio", self.modificar_socio, 1)
+        
+        #? Ver prestamos
+        self.crear_boton_ver("Préstamos / Historial", self.ver_prestamos, 2)
         
         #? Boton Volver
-        self.crear_boton_volver(self.volver_atras)
+        self.crear_boton_ver("Volver atras",self.volver_atras, 3) #! Hay que cambiar esto para que use la funcion de baseframe
         
         #! Renderizamos los datos de los socios
         self.actualizar_tabla(self.socios)
         
-    def crear_boton_ver(self, texto, funcion_ver):
+    def crear_boton_ver(self, texto, funcion_ver, col):
         self.frame_inferior.columnconfigure(2, weight=1)
         self.btn_ver = tk.Button(
             self.frame_inferior,
@@ -57,7 +61,7 @@ class GestionSocios(BaseFrame):
             fg="black",
             command=funcion_ver,
         )
-        self.btn_ver.grid(row=0, column=2, sticky="ew", padx=(10,10), pady=(10, 0), ipady=6)
+        self.btn_ver.grid(row=0, column=col, sticky="ew", padx=(10,10), pady=(10, 0), ipady=6)
 
     def filtrar(self):
         print("Filtrando")
@@ -118,6 +122,20 @@ class GestionSocios(BaseFrame):
         from views.home_view.home_view import HomeView
         self.controller.show_frame(HomeView)
     
+    def modificar_socio(self, datos=None):
+        seleccionado = self.tabla.selection()
+        
+        if not seleccionado:
+            messagebox.showwarning("Aviso", "Seleccione un socio")
+            return
+        item = self.tabla.item(seleccionado[0])
+        id_socio = item["values"][0]
+
+        from views.socio_views.modificar_socio_view import ModificarSocio
+        self.controller.show_frame(
+            ModificarSocio,
+            id_socio
+        )
     def ver_prestamos(self, datos=None):
         seleccionado = self.tabla.selection()
 

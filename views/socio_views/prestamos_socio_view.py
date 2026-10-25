@@ -80,6 +80,18 @@ class VistaPrestamosSocio(BaseFrame):
             text=f"DNI: {self.socio['dni']}",
             font=("Arial", 10)
         ).grid(row=0, column=2, sticky="w", padx=8)
+        
+        tk.Label(
+            self.frame_datos,
+            text=f"Fecha de Asociacion: {self.socio['fecha_asociacion']}",
+            font=("Arial", 10)
+        ).grid(row=0, column=3, sticky="w", padx=8)
+        
+        tk.Label(
+            self.frame_datos,
+            text=f"Telefono: {self.socio['telefono']}",
+            font=("Arial", 10)
+        ).grid(row=0, column=4, sticky="w", padx=8)
 
         # Encabezado del historial
         self.lbl_historial = tk.Label(
