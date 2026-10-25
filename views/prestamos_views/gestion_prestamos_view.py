@@ -41,9 +41,15 @@ class GestionPrestamos(BaseFrame):
         self.btn_filtros.config(text="Solo vencidos")
 
         #? --- Tabla de Prestamos
-        columnas = ("id", "socio", "libro", "vence", "estado")
-        ancho = (40, 140, 180, 90, 100)
-        self.crear_treeview(self.frame_central, columnas, ancho)
+        columnas = {
+            "id":40,
+            "socio":140,
+            "libro":180,
+            "vence":90,
+            "estado":100
+        }
+
+        self.crear_treeview(self.frame_central, columnas)
 
         # --- Botones de Acción (Inferiores)
         self.frame_acciones = tk.Frame(self.frame_central)

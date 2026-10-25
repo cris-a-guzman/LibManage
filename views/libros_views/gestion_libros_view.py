@@ -32,10 +32,17 @@ class GestionLibros(BaseFrame):
         self.frame_libros.rowconfigure(0, weight=1)
         self.frame_libros.columnconfigure(0, weight=1)
 
-        columnas = ("id_libro", "isbn", "titulo", "autor", "anio", "cantidad_total")
-        ancho = (50,120,200,150,60,80)
+        columnas = {
+            "id_libro":50,
+            "isbn":120,
+            "titulo":200,
+            "autor":150,
+            "anio":60,
+            "cantidad_total":60
+        }
+
         modo = "browse"
-        self.crear_treeview(self.frame_libros, columnas,ancho, modo)
+        self.crear_treeview(self.frame_libros, columnas, modo)
 
         #? Doble clic sobre una fila = modificar ese libro
         #! A esto lo podriamos pasar al general creo
@@ -44,7 +51,7 @@ class GestionLibros(BaseFrame):
         self.frame_inferior.columnconfigure(2, weight=1)
 
         #? Boton Crear Libro
-        self.crear_boton_crear("Crear Libro", self.modificar_libro)
+        self.crear_boton_crear("Crear Libro", self.crear_libro)
 
         #? Boton Volver Atras
         self.crear_boton_volver(self.volver_atras)
@@ -98,6 +105,10 @@ class GestionLibros(BaseFrame):
     def filtrar(self):
         self.busqueda.delete(0, tk.END)
         self.actualizar_tabla(self.libros_datos)
+        
+    def crear_libro(self):
+        from views.libros_views.crear_libro_view import CrearLibro
+        self.controller.show_frame(CrearLibro)
 
     def modificar_seleccionado(self):
         seleccion = self.tabla.selection()

@@ -83,7 +83,9 @@ class BaseFrame(tk.Frame):
         )
         self.btn_volver.grid(row=0, column=1, sticky="ew", padx=(10,10), pady=(10, 0), ipady=6)
         
-    def crear_treeview(self, frame_parent, columnas, ancho, modo=None):
+    def crear_treeview(self, frame_parent, columnas, modo=None):
+        
+        
         self.frame_tabla = tk.Frame(frame_parent)
         self.frame_tabla.grid(
             row=2, column=0, columnspan=2, sticky="nsew", pady=10
@@ -95,16 +97,16 @@ class BaseFrame(tk.Frame):
 
         self.tabla = ttk.Treeview(
             self.frame_tabla,
-            columns=columnas,
+            columns=tuple(columnas.keys()),
             show="headings",
             selectmode="browse"
         )
-
-        for idx, columna in enumerate(columnas):
-            self.tabla.heading(columna, text=columna.title())
+        
+        for clave, valor in (columnas.items()):
+            self.tabla.heading(clave, text=clave.title())
             self.tabla.column(
-                columna,
-                width=ancho[idx],
+                clave,
+                width=valor,
                 anchor="center"
             )
 
