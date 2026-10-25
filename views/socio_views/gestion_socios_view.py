@@ -23,9 +23,6 @@ class GestionSocios(BaseFrame):
         
         #? Boton Ordenar
         self.crear_boton_ordenar(self.ordenar)
-
-        #? Boton Filtrar
-        self.crear_boton_filtrar(self.filtrar)
         
         #? Creando el treeview
         columnas = {
@@ -63,56 +60,11 @@ class GestionSocios(BaseFrame):
         )
         self.btn_ver.grid(row=0, column=col, sticky="ew", padx=(10,10), pady=(10, 0), ipady=6)
 
-    def filtrar(self):
-        print("Filtrando")
-
-    def actualizar_tabla(self, lista_socios):
-        """Limpia y vuelve a cargar los datos en la tabla."""
-        for item in self.tabla.get_children():
-            self.tabla.delete(item)
-
-        for socio in lista_socios:
-            self.tabla.insert(
-                "",
-                "end",
-                values=(
-                    socio["id_socio"],
-                    socio["dni"],
-                    socio["nombre"],
-                    socio["apellido"]
-                )
-            )
-
     def buscar(self, event=None):
-        """Filtra los socios según lo ingresado."""
-        texto = self.busqueda.get().strip().lower()
-
-        if not texto:
-            self.actualizar_tabla(self.socios)
-            return
-
-        resultados = [
-            socio for socio in self.socios
-            if texto in str(socio["dni"]).lower()
-            or texto in socio["nombre"].lower()
-            or texto in socio["apellido"].lower()
-        ]
-
-        self.actualizar_tabla(resultados)
-
-    def limpiar_busqueda(self):
-        """Restablece la búsqueda y muestra todos los socios."""
-        self.busqueda.delete(0, tk.END)
-        self.actualizar_tabla(self.socios)
+        self.buscar_por_columnas(self.socios, ("dni", "nombre", "apellido"))
 
     def ordenar(self):
-        """Ordena los socios por apellido."""
-        socios_ordenados = sorted(
-            self.socios,
-            key=lambda socio: socio["apellido"].lower()
-        )
-
-        self.actualizar_tabla(socios_ordenados)
+        self.ordenar_por(self.socios, "apellido")
 
     def registrar_socio(self, socio=None):
         from views.socio_views.registrar_socio_view import RegistrarSocio
