@@ -1,5 +1,6 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
+import ttkbootstrap as tb
+from ttkbootstrap.constants import *
+from ttkbootstrap.dialogs import Messagebox
 from views.components.base_frame import BaseFrame
 
 class GestionLibros(BaseFrame):
@@ -27,7 +28,7 @@ class GestionLibros(BaseFrame):
         self.crear_boton_filtrar(self.filtrar)
 
         #? --- Tabla de Libros
-        self.frame_libros = tk.Frame(self.frame_central)
+        self.frame_libros = tb.Frame(self.frame_central)
         self.frame_libros.grid(row=2, column=0, columnspan=2, sticky="nsew", pady=10)
         self.frame_libros.rowconfigure(0, weight=1)
         self.frame_libros.columnconfigure(0, weight=1)
@@ -57,12 +58,13 @@ class GestionLibros(BaseFrame):
         self.crear_boton_volver(self.volver_atras)
 
         #? Boton Modificar (actua sobre la fila seleccionada)
-        btn_modificar = tk.Button(
+        btn_modificar = tb.Button(
             self.frame_inferior,
             text="Modificar",
-            command=self.modificar_seleccionado
+            command=self.modificar_seleccionado,
+            bootstyle="warning-outline"
         )
-        btn_modificar.grid(row=0, column=2, sticky="ew", padx=(10,10), pady=(10, 0), ipady=6)
+        btn_modificar.grid(row=0, column=2, sticky="ew", padx=8, pady=(8, 0), ipady=8)
 
         self.actualizar_tabla(self.libros_datos)
         
@@ -103,7 +105,7 @@ class GestionLibros(BaseFrame):
         self.actualizar_tabla(libros_ordenados)
 
     def filtrar(self):
-        self.busqueda.delete(0, tk.END)
+        self.busqueda.delete(0, "end")
         self.actualizar_tabla(self.libros_datos)
         
     def crear_libro(self):
@@ -113,8 +115,9 @@ class GestionLibros(BaseFrame):
     def modificar_seleccionado(self):
         seleccion = self.tabla.selection()
         if not seleccion:
-            messagebox.showwarning(
-                "Atención", "Por favor, seleccioná un libro de la lista."
+            Messagebox.show_warning(
+                "Por favor, seleccioná un libro de la lista.",
+                title="Atención"
             )
             return
 

@@ -1,5 +1,6 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
+import ttkbootstrap as tb
+from ttkbootstrap.constants import *
+from ttkbootstrap.dialogs import Messagebox
 from views.components.base_frame import BaseFrame
 
 class GestionPrestamos(BaseFrame):
@@ -26,10 +27,10 @@ class GestionPrestamos(BaseFrame):
 
         self.busqueda.grid_configure(columnspan=1, padx=(0, 5))
 
-        self.boton = tk.Button( #! se puede refactorizar
-            self.frame_central, text="Buscar", command=self.buscar
+        self.boton = tb.Button( #! se puede refactorizar
+            self.frame_central, text="Buscar", command=self.buscar, bootstyle="info-outline"
         )
-        self.boton.grid(row=0, column=1, sticky="ew", padx=5, pady=3)
+        self.boton.grid(row=0, column=1, sticky="ew", padx=5, pady=3, ipady=4)
 
         #? Boton Ordenar
         self.crear_boton_ordenar(self.ordenar)
@@ -52,12 +53,12 @@ class GestionPrestamos(BaseFrame):
         self.crear_treeview(self.frame_central, columnas)
 
         # --- Botones de Acción (Inferiores)
-        self.frame_acciones = tk.Frame(self.frame_central)
+        self.frame_acciones = tb.Frame(self.frame_central)
         self.frame_acciones.grid(row=3, column=0, columnspan=2, sticky="ew", pady=5)
         self.frame_acciones.columnconfigure(0, weight=1)
 
-        self.btn_devolver = tk.Button(self.frame_acciones, text="devolver", command=self.marcar_devuelto, )
-        self.btn_devolver.pack(side="right", padx=5)
+        self.btn_devolver = tb.Button(self.frame_acciones, text="Devolver", command=self.marcar_devuelto, bootstyle=SUCCESS)
+        self.btn_devolver.pack(side="right", padx=5, ipady=4, ipadx=10)
         self.btn_devolver.config(state="disabled")
 
         self.tabla.bind("<<TreeviewSelect>>", self.actualizar_boton_devolver)
@@ -82,16 +83,16 @@ class GestionPrestamos(BaseFrame):
             )
 
         except Exception as error:
-            messagebox.showerror(
-                "Error",
-                f"No se pudieron filtrar los préstamos: {error}"
+            Messagebox.show_error(
+                f"No se pudieron filtrar los préstamos: {error}",
+                title="Error"
             )
             return
 
         self.solo_vencidos = nuevo_estado
         self.prestamos_datos = datos
 
-        self.busqueda.delete(0, tk.END)
+        self.busqueda.delete(0, "end")
         self.actualizar_tabla(self.prestamos_datos)
 
         if self.solo_vencidos:
@@ -139,7 +140,7 @@ class GestionPrestamos(BaseFrame):
 
     def limpiar_busqueda(self):
         """Restablece la búsqueda y muestra todos los datos."""
-        self.busqueda.delete(0, tk.END)
+        self.busqueda.delete(0, "end")
         self.actualizar_tabla(self.prestamos_datos)
 
     def ordenar(self):
@@ -179,9 +180,9 @@ class GestionPrestamos(BaseFrame):
             self.mensaje_info("Devolución registrada","El préstamo fue devuelto correctamente.")
 
         except Exception as error:
-            messagebox.showerror(
-                "Error",
-                f"No se pudo registrar la devolución: {error}"
+            Messagebox.show_error(
+                f"No se pudo registrar la devolución: {error}",
+                title="Error"
             )
 
 

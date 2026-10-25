@@ -1,7 +1,9 @@
 
-import tkinter as tk
-from tkinter import ttk, messagebox
+import ttkbootstrap as tb
+from ttkbootstrap.constants import *
+from ttkbootstrap.dialogs import Messagebox
 from views.components.base_frame import BaseFrame
+from views.components.estilo import SUBTITULO, CUERPO, FUENTE
 
 
 class VistaPrestamosSocio(BaseFrame):
@@ -15,7 +17,7 @@ class VistaPrestamosSocio(BaseFrame):
         self.prestamos_socio = self.ApiSocios.listar_prestamos_socio(id_socio)
 
         if not self.socio:
-            messagebox.showerror("Error", "No se encontró el socio.")
+            Messagebox.show_error("No se encontró el socio.", title="Error")
             self.volver_atras()
             return
 
@@ -23,15 +25,15 @@ class VistaPrestamosSocio(BaseFrame):
             self.prestamos_socio = []
 
         # Estilos
-        style = ttk.Style(self)
+        style = tb.Style()
         style.configure(
             "Prestamos.Treeview",
-            rowheight=30,
-            font=("Arial", 10)
+            rowheight=34,
+            font=CUERPO
         )
         style.configure(
             "Prestamos.Treeview.Heading",
-            font=("Arial", 10, "bold")
+            font=(FUENTE, 10, "bold")
         )
 
         # Distribución del contenido
@@ -44,12 +46,11 @@ class VistaPrestamosSocio(BaseFrame):
         )
 
         # Ficha del socio
-        self.frame_datos = tk.LabelFrame(
+        self.frame_datos = tb.Labelframe(
             self.frame_central,
             text="Información del socio",
-            font=("Arial", 10, "bold"),
-            padx=12,
-            pady=10
+            padding=16,
+            bootstyle=PRIMARY
         )
         self.frame_datos.grid(
             row=0,
@@ -62,43 +63,44 @@ class VistaPrestamosSocio(BaseFrame):
         self.frame_datos.columnconfigure((0,2), weight=1)
         self.frame_datos.columnconfigure(1, weight=2)
 
-        tk.Label(
+        tb.Label(
             self.frame_datos,
             text=f"ID: {self.socio['id_socio']}",
-            font=("Arial", 10)
+            font=CUERPO
         ).grid(row=0, column=0, sticky="w", padx=8)
 
-        tk.Label(
+        tb.Label(
             self.frame_datos,
             text=f"Socio: {self.socio['nombre']} "
                  f"{self.socio['apellido']}",
-            font=("Arial", 10, "bold")
+            font=SUBTITULO
         ).grid(row=0, column=1, sticky="w", padx=8)
 
-        tk.Label(
+        tb.Label(
             self.frame_datos,
             text=f"DNI: {self.socio['dni']}",
-            font=("Arial", 10)
+            font=CUERPO
         ).grid(row=0, column=2, sticky="w", padx=8)
         
-        tk.Label(
+        tb.Label(
             self.frame_datos,
             text=f"Fecha de Asociacion: {self.socio['fecha_asociacion']}",
-            font=("Arial", 10)
+            font=CUERPO
         ).grid(row=0, column=3, sticky="w", padx=8)
         
-        tk.Label(
+        tb.Label(
             self.frame_datos,
             text=f"Telefono: {self.socio['telefono']}",
-            font=("Arial", 10)
+            font=CUERPO
         ).grid(row=0, column=4, sticky="w", padx=8)
 
         # Encabezado del historial
-        self.lbl_historial = tk.Label(
+        self.lbl_historial = tb.Label(
             self.frame_central,
             text="Historial de préstamos",
-            font=("Arial", 12, "bold"),
-            anchor="w"
+            font=SUBTITULO,
+            anchor="w",
+            bootstyle=PRIMARY
         )
         self.lbl_historial.grid(
             row=1,
@@ -109,7 +111,7 @@ class VistaPrestamosSocio(BaseFrame):
         )
 
         # Tabla
-        self.frame_tabla = tk.Frame(self.frame_central)
+        self.frame_tabla = tb.Frame(self.frame_central)
         self.frame_tabla.grid(
             row=2,
             column=0,
@@ -130,12 +132,13 @@ class VistaPrestamosSocio(BaseFrame):
             "estado"
         )
 
-        self.tabla = ttk.Treeview(
+        self.tabla = tb.Treeview(
             self.frame_tabla,
             columns=columnas,
             show="headings",
             selectmode="browse",
-            style="Prestamos.Treeview"
+            style="Prestamos.Treeview",
+            bootstyle=INFO
         )
 
         encabezados = {
@@ -170,16 +173,18 @@ class VistaPrestamosSocio(BaseFrame):
 
         self.tabla.column("libro", anchor="w")
 
-        scrollbar_y = ttk.Scrollbar(
+        scrollbar_y = tb.Scrollbar(
             self.frame_tabla,
             orient="vertical",
-            command=self.tabla.yview
+            command=self.tabla.yview,
+            bootstyle="round"
         )
 
-        scrollbar_x = ttk.Scrollbar(
+        scrollbar_x = tb.Scrollbar(
             self.frame_tabla,
             orient="horizontal",
-            command=self.tabla.xview
+            command=self.tabla.xview,
+            bootstyle="round"
         )
 
         self.tabla.configure(
@@ -192,8 +197,9 @@ class VistaPrestamosSocio(BaseFrame):
         scrollbar_x.grid(row=1, column=0, sticky="ew")
 
         # Filas alternadas
-        self.tabla.tag_configure("par", background="#F2F5F9")
-        self.tabla.tag_configure("impar", background="#FFFFFF")
+        colores = tb.Style().colors
+        self.tabla.tag_configure("par", background=colores.bg)
+        self.tabla.tag_configure("impar", background=colores.inputbg)
 
         # Botones inferiores de BaseFrame
         self.crear_boton_volver(self.volver_atras)

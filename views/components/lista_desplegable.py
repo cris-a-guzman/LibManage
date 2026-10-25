@@ -1,7 +1,7 @@
-import tkinter as tk
-from tkinter import ttk
+import ttkbootstrap as tb
+from ttkbootstrap.constants import *
 
-class AutocompleteCombobox(ttk.Combobox):
+class AutocompleteCombobox(tb.Combobox):
     def set_completion_list(self, lista_opciones):
         """Establece la lista completa de opciones."""
         self._lista_completa = sorted(lista_opciones, key=str.lower)

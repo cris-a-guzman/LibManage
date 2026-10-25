@@ -1,25 +1,30 @@
 
-import tkinter as tk
-from tkinter import ttk
+import ttkbootstrap as tb
+from ttkbootstrap.constants import *
 
 
-class FormularioDesplazable(tk.Frame):
+
+class FormularioDesplazable(tb.Frame):
 
     def __init__(self, parent):
         super().__init__(parent)
 
-        self.canvas = tk.Canvas(
+        colores = tb.Style().colors
+        self.canvas = tb.Canvas(
             self,
-            highlightthickness=0
+            highlightthickness=0,
+            background=colores.bg,
+            borderwidth=0
         )
 
-        barra = ttk.Scrollbar(
+        barra = tb.Scrollbar(
             self,
             orient="vertical",
-            command=self.canvas.yview
+            command=self.canvas.yview,
+            bootstyle="round"
         )
 
-        self.contenido = tk.Frame(self.canvas)
+        self.contenido = tb.Frame(self.canvas)
 
         self.ventana = self.canvas.create_window(
             (0, 0),

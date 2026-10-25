@@ -1,9 +1,11 @@
-import tkinter as tk
-from tkinter import ttk,messagebox
+import ttkbootstrap as tb
+from ttkbootstrap.constants import *
+from ttkbootstrap.dialogs import Messagebox
 from datetime import date, datetime
 from views.components.lista_desplegable import AutocompleteCombobox
 from views.components.base_frame import BaseFrame
 from views.components.formulario_desplazable import FormularioDesplazable
+from views.components.estilo import TITULO
 
 class RegistrarPrestamo(BaseFrame):
 
@@ -30,8 +32,8 @@ class RegistrarPrestamo(BaseFrame):
         self.rowconfigure(1, weight=1)
         self.columnconfigure(0, weight=1)
 
-        tk.Label(
-            self, text="Registrar Préstamo", font=("Arial", 14, "bold")
+        tb.Label(
+            self, text="Registrar Préstamo", font=TITULO, bootstyle=PRIMARY
         ).grid(row=0, column=0, sticky="new", pady=12)
 
         # --- Frame Central
@@ -40,40 +42,37 @@ class RegistrarPrestamo(BaseFrame):
         )
         self.scroll_formulario.pack(fill="both", expand=True)
 
-        self.frame_central = tk.Frame(self.scroll_formulario.contenido, padx=20, pady=5)
+        self.frame_central = tb.Labelframe(self.scroll_formulario.contenido, text="Nuevo préstamo", padding=22, bootstyle=PRIMARY)
         self.frame_central.pack(fill="both", expand=True)
         self.frame_central.columnconfigure(0, weight=1)
 
-        # --- Buscar Socio (DNI)
-        tk.Label(
-            self.frame_central, text="Ingrese DNI del SOCIO:"
+        tb.Label(
+            self.frame_central, text="Ingrese DNI del SOCIO:", bootstyle=PRIMARY
         ).grid(row=0, column=0, sticky="w", pady=(5, 0))
 
         self.combo_dni_socio = AutocompleteCombobox(
-            self.frame_central, width=30, font=("Arial", 10)
+            self.frame_central, width=30, bootstyle=PRIMARY
         )
         self.combo_dni_socio.set_completion_list(self.dni_socios)
         self._configurar_placeholder(self.combo_dni_socio, "Escribir DNI...")
         self.combo_dni_socio.grid(row=1, column=0, sticky="ew", ipady=5, pady=(0, 5))
         self.combo_dni_socio.bind("<<ComboboxSelected>>", self.al_seleccionar_socio)
 
-        self.lbl_socio_seleccionado = tk.Label(
+        self.lbl_socio_seleccionado = tb.Label(
             self.frame_central,
             text="Ningún socio seleccionado",
-            bg="#f0f0f0",
-            bd=1,
-            relief="solid",
-            pady=8,
+            bootstyle="secondary",
+            padding=8,
         )
         self.lbl_socio_seleccionado.grid(row=2, column=0, sticky="ew", pady=(0, 10))
 
         # --- Buscar Libro (Título)
-        tk.Label(
-            self.frame_central, text="Buscar libro por TÍTULO:"
+        tb.Label(
+            self.frame_central, text="Buscar libro por TÍTULO:", bootstyle=PRIMARY
         ).grid(row=3, column=0, sticky="w", pady=(5, 0))
 
         self.combo_libro = AutocompleteCombobox(
-            self.frame_central, width=30, font=("Arial", 10)
+            self.frame_central, width=30, bootstyle=PRIMARY
         )
         self.combo_libro.set_completion_list(
             list(self.opciones_libros.keys())
@@ -82,22 +81,20 @@ class RegistrarPrestamo(BaseFrame):
         self.combo_libro.grid(row=4, column=0, sticky="ew", ipady=5, pady=(0, 5))
         self.combo_libro.bind("<<ComboboxSelected>>", self.al_seleccionar_libro)
 
-        self.lbl_libro_seleccionado = tk.Label(
+        self.lbl_libro_seleccionado = tb.Label(
             self.frame_central,
             text="Ningún libro seleccionado",
-            bg="#f0f0f0",
-            bd=1,
-            relief="solid",
-            pady=8,
+            bootstyle="secondary",
+            padding=8,
         )
         self.lbl_libro_seleccionado.grid(row=5, column=0, sticky="ew", pady=(0, 10))
 
         # --- Libros incluidos en el préstamo
-        self.frame_libros = tk.LabelFrame(
+        self.frame_libros = tb.Labelframe(
             self.frame_central,
             text="Libros del préstamo",
-            padx=10,
-            pady=10
+            padding=10,
+            bootstyle=INFO
         )
         self.frame_libros.grid(
             row=6, column=0, sticky="ew", pady=10
@@ -105,38 +102,42 @@ class RegistrarPrestamo(BaseFrame):
         self.frame_libros.columnconfigure(0, weight=1)
 
         # Controles para agregar ejemplares
-        self.controles_libros = tk.Frame(self.frame_libros)
+        self.controles_libros = tb.Frame(self.frame_libros)
         self.controles_libros.grid(
             row=0, column=0, columnspan=2, sticky="w"
         )
 
-        tk.Label(
+        tb.Label(
             self.controles_libros,
             text="Cantidad:"
         ).pack(side="left", padx=5)
 
-        self.cantidad_libro = tk.Spinbox(
+        self.cantidad_libro = tb.Spinbox(
             self.controles_libros,
             from_=1,
             to=999,
-            width=5
+            width=5,
+            bootstyle=PRIMARY
         )
+        self.cantidad_libro.set(1)
         self.cantidad_libro.pack(side="left", padx=5)
 
-        self.btn_agregar_libro = tk.Button(
+        self.btn_agregar_libro = tb.Button(
             self.controles_libros,
             text="Agregar libro",
-            command=self.agregar_libro
+            command=self.agregar_libro,
+            bootstyle=SUCCESS
         )
         self.btn_agregar_libro.pack(side="left", padx=5)
 
         # Tabla de libros seleccionados
-        self.tabla_libros = ttk.Treeview(
+        self.tabla_libros = tb.Treeview(
             self.frame_libros,
             columns=("titulo", "cantidad"),
             show="headings",
             height=4,
-            selectmode="browse"
+            selectmode="browse",
+            bootstyle=INFO
         )
 
         self.tabla_libros.heading("titulo", text="Libro")
@@ -149,10 +150,11 @@ class RegistrarPrestamo(BaseFrame):
             row=1, column=0, sticky="ew", pady=10
         )
 
-        barra_libros = ttk.Scrollbar(
+        barra_libros = tb.Scrollbar(
             self.frame_libros,
             orient="vertical",
-            command=self.tabla_libros.yview
+            command=self.tabla_libros.yview,
+            bootstyle="round"
         )
         barra_libros.grid(row=1, column=1, sticky="ns")
 
@@ -160,65 +162,65 @@ class RegistrarPrestamo(BaseFrame):
             yscrollcommand=barra_libros.set
         )
 
-        self.btn_quitar_libro = tk.Button(
+        self.btn_quitar_libro = tb.Button(
             self.frame_libros,
             text="Quitar seleccionado",
-            command=self.quitar_libro
+            command=self.quitar_libro,
+            bootstyle="danger-outline"
         )
         self.btn_quitar_libro.grid(
             row=2, column=0, sticky="e"
         )
 
         # --- Fecha de préstamo (automática)
-        tk.Label(
+        tb.Label(
             self.frame_central, text="Fecha de préstamo (Automática)"
         ).grid(row=7, column=0, sticky="w", pady=(5, 0))
 
-        self.lbl_fecha_prestamo = tk.Label(
+        self.lbl_fecha_prestamo = tb.Label(
             self.frame_central,
             text=date.today().strftime("%d/%m/%Y"),
-            bg="#d9d9d9",
-            bd=1,
-            relief="solid",
-            pady=8,
+            bootstyle="secondary",
+            padding=8,
         )
         self.lbl_fecha_prestamo.grid(row=8, column=0, sticky="ew", pady=(0, 10))
 
         # --- Fecha de devolución estimada
-        tk.Label(
+        tb.Label(
             self.frame_central, text="Fecha de devolución estimada"
         ).grid(row=9, column=0, sticky="w", pady=(5, 0))
 
-        self.entry_fecha_devolucion = tk.Entry(self.frame_central, justify="center")
+        self.entry_fecha_devolucion = tb.Entry(self.frame_central, justify="center", bootstyle=PRIMARY)
         self._configurar_placeholder(self.entry_fecha_devolucion, "dd/mm/aaaa")
         self.entry_fecha_devolucion.grid(
             row=10, column=0, sticky="ew", ipady=5, pady=(0, 15)
         )
 
         # --- Botones Confirmar / Cancelar
-        self.frame_botones = tk.Frame(self.frame_central)
+        self.frame_botones = tb.Frame(self.frame_central)
         self.frame_botones.grid(row=11, column=0, sticky="ew")
         self.frame_botones.columnconfigure(0, weight=1)
         self.frame_botones.columnconfigure(1, weight=1)
 
-        self.btn_confirmar = tk.Button(
+        self.btn_confirmar = tb.Button(
             self.frame_botones,
             text="Confirmar Préstamo",
             command=self.confirmar_prestamo,
+            bootstyle=SUCCESS
         )
-        self.btn_confirmar.grid(row=0, column=0, sticky="ew", padx=(0, 5), ipady=6)
+        self.btn_confirmar.grid(row=0, column=0, sticky="ew", padx=(0, 5), ipady=8)
 
-        self.btn_cancelar = tk.Button(
-            self.frame_botones, text="Cancelar", command=self.cancelar
+        self.btn_cancelar = tb.Button(
+            self.frame_botones, text="Cancelar", command=self.cancelar, bootstyle="secondary-outline"
         )
-        self.btn_cancelar.grid(row=0, column=1, sticky="ew", padx=(5, 0), ipady=6)
+        self.btn_cancelar.grid(row=0, column=1, sticky="ew", padx=(5, 0), ipady=8)
 
     def _configurar_placeholder(self, widget, placeholder):
         """Helper para reutilizar la lógica de placeholders en campos de texto/combos."""
         widget.insert(0, placeholder)
         widget.bind(
             "<FocusIn>",
-            lambda e: widget.delete(0, tk.END) if widget.get() == placeholder else None,
+            lambda e: widget.delete(0, "end") if widget.get() == placeholder else None,
         )
         widget.bind(
             "<FocusOut>",
@@ -231,7 +233,7 @@ class RegistrarPrestamo(BaseFrame):
             # Guardamos la referencia al socio seleccionado
             self.socio_seleccionado = dni_ingresado
             self.lbl_socio_seleccionado.config(
-                text=f"Socio Seleccionado (DNI): {dni_ingresado}", bg="#d9f2d9"
+                text=f"Socio Seleccionado (DNI): {dni_ingresado}", bootstyle=SUCCESS
             )
 
     def al_seleccionar_libro(self, event):
@@ -250,16 +252,16 @@ class RegistrarPrestamo(BaseFrame):
                 f"Libro: {libro['titulo']} - "
                 f"{int(libro['disponibles'])} disponibles"
             ),
-            bg="#d9f2d9"
+            bootstyle=SUCCESS
         )
 
     def agregar_libro(self):
         libro = self.libro_seleccionado
 
         if not libro:
-            messagebox.showwarning(
-                "Atención",
-                "Primero seleccioná un libro."
+            Messagebox.show_warning(
+                "Primero seleccioná un libro.",
+                title="Atención"
             )
             return
 
@@ -267,9 +269,9 @@ class RegistrarPrestamo(BaseFrame):
         if self.opciones_libros.get(
             self.combo_libro.get().strip()
         ) is not libro:
-            messagebox.showwarning(
-                "Atención",
-                "Seleccioná nuevamente el libro."
+            Messagebox.show_warning(
+                "Seleccioná nuevamente el libro.",
+                title="Atención"
             )
             return
 
@@ -280,27 +282,27 @@ class RegistrarPrestamo(BaseFrame):
                 raise ValueError
             
             if cantidad > libro["disponibles"]:
-                messagebox.showwarning(
-                    "Sin disponibilidad suficiente",
+                Messagebox.show_warning(
                     f"Solo hay {int(libro['disponibles'])} "
-                    "ejemplares disponibles de este libro."
+                    "ejemplares disponibles de este libro.",
+                    title="Sin disponibilidad suficiente"
                 )
                 return
 
         except ValueError:
-            messagebox.showwarning(
-                "Cantidad inválida",
-                "Ingresá una cantidad entera mayor que cero."
+            Messagebox.show_warning(
+                "Ingresá una cantidad entera mayor que cero.",
+                title="Cantidad inválida"
             )
             return
 
         id_libro = libro["id_libro"]
 
         if id_libro in self.libros_seleccionados:
-            messagebox.showwarning(
-                "Libro repetido",
+            Messagebox.show_warning(
                 "Este libro ya está agregado. "
-                "Quitalo si querés cambiar su cantidad."
+                "Quitalo si querés cambiar su cantidad.",
+                title="Libro repetido"
             )
             return
 
@@ -321,21 +323,21 @@ class RegistrarPrestamo(BaseFrame):
         # Preparar el formulario para otro libro
         self.combo_libro.set("")
         self.libro_seleccionado = None
-        self.cantidad_libro.delete(0, tk.END)
+        self.cantidad_libro.delete(0, "end")
         self.cantidad_libro.insert(0, "1")
 
         self.lbl_libro_seleccionado.config(
             text="Ningún libro seleccionado",
-            bg="#f0f0f0"
+            bootstyle="secondary"
         )
 
     def quitar_libro(self):
         seleccion = self.tabla_libros.selection()
 
         if not seleccion:
-            messagebox.showwarning(
-                "Atención",
-                "Seleccioná un libro para quitarlo."
+            Messagebox.show_warning(
+                "Seleccioná un libro para quitarlo.",
+                title="Atención"
             )
             return
 
@@ -346,23 +348,23 @@ class RegistrarPrestamo(BaseFrame):
     
     def confirmar_prestamo(self):
         if not self.socio_seleccionado:
-            messagebox.showwarning(
-                "Atención",
-                "Seleccioná un socio."
+            Messagebox.show_warning(
+                "Seleccioná un socio.",
+                title="Atención"
             )
             return
 
         if self.combo_dni_socio.get().strip() != self.socio_seleccionado:
-            messagebox.showwarning(
-                "Atención",
-                "Volvé a seleccionar un socio válido."
+            Messagebox.show_warning(
+                "Volvé a seleccionar un socio válido.",
+                title="Atención"
             )
             return
 
         if not self.libros_seleccionados:
-            messagebox.showwarning(
-                "Atención",
-                "Agregá al menos un libro al préstamo."
+            Messagebox.show_warning(
+                "Agregá al menos un libro al préstamo.",
+                title="Atención"
             )
             return
 
@@ -377,9 +379,9 @@ class RegistrarPrestamo(BaseFrame):
                 raise ValueError
 
         except ValueError:
-            messagebox.showwarning(
-                "Fecha inválida",
-                "Ingresá una fecha válida igual o posterior a hoy."
+            Messagebox.show_warning(
+                "Ingresá una fecha válida igual o posterior a hoy.",
+                title="Fecha inválida"
             )
             return
 
@@ -397,15 +399,15 @@ class RegistrarPrestamo(BaseFrame):
             )
 
         except Exception as error:
-            messagebox.showerror(
-                "Error",
-                f"No se pudo registrar el préstamo: {error}"
+            Messagebox.show_error(
+                f"No se pudo registrar el préstamo: {error}",
+                title="Error"
             )
             return
 
-        messagebox.showinfo(
-            "Préstamo registrado",
-            f"El préstamo {id_prestamo} se registró correctamente."
+        Messagebox.show_info(
+            f"El préstamo {id_prestamo} se registró correctamente.",
+            title="Préstamo registrado"
         )
 
         self.cancelar()

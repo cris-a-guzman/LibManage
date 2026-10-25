@@ -1,5 +1,6 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
+import ttkbootstrap as tb
+from ttkbootstrap.constants import *
+from ttkbootstrap.dialogs import Messagebox
 from views.components.base_frame import BaseFrame
 
 
@@ -55,13 +56,19 @@ class GestionSocios(BaseFrame):
         
     def crear_boton_ver(self, texto, funcion_ver, col):
         self.frame_inferior.columnconfigure(2, weight=1)
-        self.btn_ver = tk.Button(
+        estilos = {
+            0: SUCCESS,
+            1: "warning-outline",
+            2: INFO,
+            3: "secondary-outline",
+        }
+        self.btn_ver = tb.Button(
             self.frame_inferior,
             text=texto,
-            fg="black",
             command=funcion_ver,
+            bootstyle=estilos.get(col, PRIMARY)
         )
-        self.btn_ver.grid(row=0, column=col, sticky="ew", padx=(10,10), pady=(10, 0), ipady=6)
+        self.btn_ver.grid(row=0, column=col, sticky="ew", padx=6, pady=(8, 0), ipady=8)
 
     def filtrar(self):
         print("Filtrando")
@@ -102,7 +109,7 @@ class GestionSocios(BaseFrame):
 
     def limpiar_busqueda(self):
         """Restablece la búsqueda y muestra todos los socios."""
-        self.busqueda.delete(0, tk.END)
+        self.busqueda.delete(0, "end")
         self.actualizar_tabla(self.socios)
 
     def ordenar(self):
@@ -126,7 +133,7 @@ class GestionSocios(BaseFrame):
         seleccionado = self.tabla.selection()
         
         if not seleccionado:
-            messagebox.showwarning("Aviso", "Seleccione un socio")
+            Messagebox.show_warning("Seleccione un socio", title="Aviso")
             return
         item = self.tabla.item(seleccionado[0])
         id_socio = item["values"][0]
@@ -140,7 +147,7 @@ class GestionSocios(BaseFrame):
         seleccionado = self.tabla.selection()
 
         if not seleccionado:
-            messagebox.showwarning("Aviso", "Seleccione un socio")
+            Messagebox.show_warning("Seleccione un socio", title="Aviso")
             return
 
         item = self.tabla.item(seleccionado[0])

@@ -1,33 +1,35 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
+import ttkbootstrap as tb
+from ttkbootstrap.constants import *
+from ttkbootstrap.dialogs import Messagebox
 from views.components.base_frame import BaseFrame
-from views.components.formulario_desplazable import FormularioDesplazable
 from api_libros.open_library import LibraryApi
+from views.components.estilo import CUERPO
 
 class CrearLibro(BaseFrame):
     def __init__(self, parent, controller, conexion, libro_datos=None):
         super().__init__(parent, controller, conexion)
         self.controller = controller
         self.libro_datos = libro_datos or {}
-        self.api_busqueda = LibraryApi()
+        
+        # INICIALIZACIÓN PEREZOSA (Lazy Loading): No instanciamos la API aquí.
+        # Se instanciará solo cuando el usuario haga clic en "Buscar".
+        self.api_busqueda = None 
         self.docs = []
 
         self.columnconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
-        self.crear_titulo("Crear Libro")
+        self.crear_titulo("Gestión de Libro")
 
-        self.scroll_formulario = FormularioDesplazable(self)
-        self.scroll_formulario.grid(row=1, column=0, sticky="nsew", padx=10, pady=(5, 10))
-
-        self.frame_central = tk.Frame(self.scroll_formulario.contenido, bd=1, relief="solid", padx=20, pady=20)
-        self.frame_central.pack(fill="both", expand=True)
+        # CONTENEDOR PRINCIPAL LIMPIO (Sin bootstyle=PRIMARY)
+        self.frame_central = tb.Frame(self)
+        self.frame_central.grid(row=1, column=0, sticky="nsew", padx=15, pady=10)
         self.frame_central.columnconfigure((0, 1), weight=1, uniform="columnas")
         self.frame_central.rowconfigure(0, weight=1)
         
-        self.frame_formulario = tk.Frame(self.frame_central)
-        self.frame_formulario.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        # 1. SECCIÓN IZQUIERDA: LabelFrame para agrupar visualmente el formulario
+        self.frame_formulario = tb.Labelframe(self.frame_central, text="Detalles del Libro", padding=18, bootstyle=PRIMARY)
+        self.frame_formulario.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
 
-        #? campos (clave, etiqueta, placeholder, fila)
         campos = [
             ("titulo", "Título", "Título del Libro", 0),
             ("autor", "Autor", "Autor", 2),
@@ -42,26 +44,26 @@ class CrearLibro(BaseFrame):
             entrada = self.crear_campo(placeholder, fila + 1)
             self.entradas[clave] = entrada
 
-        # Alias para mantener compatibilidad con métodos existentes
         self.txt_titulo = self.entradas["titulo"]
         self.txt_autor = self.entradas["autor"]
         self.txt_anio = self.entradas["anio"]
         self.txt_cantidad = self.entradas["cantidad"]
         self.txt_isbn = self.entradas["isbn"]
 
-        # Botón de búsqueda de libro integrado junto al campo de título
-        self.btn_buscar = tk.Button(self.frame_formulario, text="Buscar Libro", command=self.buscar_libro)
-        self.btn_buscar.grid(row=1, column=1, padx=5, pady=4, ipady=4)
+        # Botón con estilo outline para que no sea tan pesado visualmente
+        self.btn_buscar = tb.Button(self.frame_formulario, text="Buscar Online", bootstyle="info-outline", command=self.buscar_libro)
+        self.btn_buscar.grid(row=1, column=1, padx=10, pady=4, ipady=2)
         
-        self.frame_api = tk.Frame(self.frame_central, bd=1, relief="solid")
-        self.frame_api.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+        # 2. SECCIÓN DERECHA: LabelFrame para la API
+        self.frame_api = tb.Labelframe(self.frame_central, text="Búsqueda Externa", padding=18, bootstyle=INFO)
+        self.frame_api.grid(row=0, column=1, sticky="nsew", padx=(10, 0))
         self.frame_api.rowconfigure(1, weight=1)
         self.frame_api.columnconfigure(0, weight=1)
 
-        self.lbl_busqueda = tk.Label(self.frame_api, text="Los Resultados se listarón debajo", justify="center")
-        self.lbl_busqueda.grid(row=0, column=0, columnspan=2, pady=6)
+        self.lbl_busqueda = tb.Label(self.frame_api, text="Los Resultados se listarán debajo", justify="center", font=CUERPO, bootstyle=SECONDARY)
+        self.lbl_busqueda.grid(row=0, column=0, columnspan=2, pady=(0, 10))
 
-        # Configuración del Treeview
+        # Configuración del Treeview (Bootstyle por defecto para mejor integración)
         columnas = {
             "id": ("ID", 60, "center"),
             "titulo": ("Título", 250, "w"),
@@ -69,56 +71,85 @@ class CrearLibro(BaseFrame):
             "año": ("Año", 80, "center")
         }
 
-        self.tabla = ttk.Treeview(
+        self.tabla = tb.Treeview(
             self.frame_api, 
             columns=tuple(columnas.keys()), 
             show="headings", 
-            selectmode="browse", 
-            style="Prestamos.Treeview"
+            selectmode="browse",
+            bootstyle=INFO
         )
 
         for col, (texto, ancho, fija) in columnas.items():
             self.tabla.heading(col, text=texto)
             self.tabla.column(col, width=ancho, minwidth=60, stretch=False, anchor=fija)
 
-        # Scrollbars
-        sb_y = ttk.Scrollbar(self.frame_api, orient="vertical", command=self.tabla.yview)
-        sb_x = ttk.Scrollbar(self.frame_api, orient="horizontal", command=self.tabla.xview)
-        self.tabla.configure(yscrollcommand=sb_y.set, xscrollcommand=sb_x.set)
+        sb_y = tb.Scrollbar(self.frame_api, orient="vertical", command=self.tabla.yview, bootstyle="round")
+        self.tabla.configure(yscrollcommand=sb_y.set)
 
         self.tabla.grid(row=1, column=0, sticky="nsew")
         sb_y.grid(row=1, column=1, sticky="ns")
-        sb_x.grid(row=2, column=0, sticky="ew")
-
         self.tabla.bind("<Double-1>", lambda e: self.seleccionar_libro_tree())
         
-        self.frame_botones = tk.Frame(self.frame_central)
-        self.frame_botones.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(15, 0))
+        # 3. ZONA DE BOTONES (Sin fondos de color, usando estilos semánticos)
+        self.frame_botones = tb.Frame(self.frame_central)
+        self.frame_botones.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(20, 0))
         
         for i in range(3):
             self.frame_botones.columnconfigure(i, weight=1)
 
-        tk.Button(self.frame_botones, text="Guardar Cambios", command=self.guardar_cambios)\
-            .grid(row=0, column=0, padx=5, ipady=3, sticky="ew")
+        tb.Button(self.frame_botones, text="Guardar Cambios", bootstyle=SUCCESS, command=self.guardar_cambios)\
+            .grid(row=0, column=0, padx=6, ipady=8, sticky="ew")
 
-        tk.Button(self.frame_botones, text="Cancelar y volver atrás", command=self.descartar)\
-            .grid(row=0, column=2, padx=5, ipady=3, sticky="ew")
+        tb.Button(self.frame_botones, text="Cancelar y volver atrás", bootstyle="secondary-outline", command=self.descartar)\
+            .grid(row=0, column=2, padx=6, ipady=8, sticky="ew")
 
         if self.libro_datos:
-            tk.Button(self.frame_botones, text="Dar de baja", command=self.eliminar_libro)\
-                .grid(row=0, column=1, padx=5, ipady=3, sticky="ew")
-                
+            tb.Button(self.frame_botones, text="Dar de baja", bootstyle="danger-outline", command=self.eliminar_libro)\
+                .grid(row=0, column=1, padx=6, ipady=8, sticky="ew")
+
+    # --- MODIFICACIÓN EN BUSCAR LIBRO ---
+    def buscar_libro(self):
+        titulo = self.txt_titulo.get().strip()
+        if not titulo or titulo == "Título del Libro":
+            Messagebox.show_warning("Ingresa un título para buscar.", title="Atención")
+            return
+
+        self.lbl_busqueda.config(text=f"Buscando: {titulo}...")
+        self.update() 
+        
+        # Inicializamos la API solo si el usuario decide usarla (evita lentitud al abrir la pantalla)
+        if self.api_busqueda is None:
+            self.api_busqueda = LibraryApi()
+
+        datos_libros, self.docs = self.api_busqueda.buscar_titulo(titulo)
+
+        if datos_libros is None:
+            self.lbl_busqueda.config(text="No se encontraron libros o falló la conexión.")
+            self.actualizar_treeview([])
+        else:
+            self.lbl_busqueda.config(text=f"Resultados para: {titulo}")
+            self.actualizar_treeview(datos_libros)
+
+    # (El resto de tus métodos se mantienen exactamente igual)
+    def seleccionar_libro_tree(self):
+        seleccion = self.tabla.selection()
+        if not seleccion:
+            return
+        id_libro = self.tabla.item(seleccion[0])["values"][0]
+        datos = self.api_busqueda.funcion_final(id_libro, self.docs)
+        self.cargar_datos(datos)
+        
     def crear_etiqueta(self, texto, fila):
-        label = tk.Label(self.frame_formulario, text=texto, justify="center", width=30)
-        label.grid(row=fila, column=0, pady=2)
+        label = tb.Label(self.frame_formulario, text=texto, justify="center", width=30, bootstyle=PRIMARY)
+        label.grid(row=fila, column=0, pady=(8, 2))
         return label
     
     def crear_campo(self, placeholder, fila):
-        entry = tk.Entry(self.frame_formulario, justify="center", width=30)
+        entry = tb.Entry(self.frame_formulario, justify="center", width=30, bootstyle=PRIMARY)
         entry.insert(0, placeholder)
-        entry.grid(row=fila, column=0, pady=4, ipady=4)
+        entry.grid(row=fila, column=0, pady=(0, 6), ipady=6)
 
-        entry.bind("<FocusIn>", lambda e: entry.delete(0, tk.END) if entry.get() == placeholder else None)
+        entry.bind("<FocusIn>", lambda e: entry.delete(0, "end") if entry.get() == placeholder else None)
         entry.bind("<FocusOut>", lambda e: entry.insert(0, placeholder) if not entry.get().strip() else None)
         return entry
     
@@ -137,7 +168,7 @@ class CrearLibro(BaseFrame):
             
     def set_entry(self, entry, valor):
         if valor:
-            entry.delete(0, tk.END)
+            entry.delete(0, "end")
             entry.insert(0, str(valor))
 
     def cargar_datos(self, datos):
@@ -149,32 +180,6 @@ class CrearLibro(BaseFrame):
         self.set_entry(self.txt_isbn, isbn)
         self.set_entry(self.txt_anio, anio)
         
-    def buscar_libro(self):
-        titulo = self.txt_titulo.get().strip()
-        if not titulo or titulo == "Título del Libro":
-            messagebox.showwarning("Atención", "Ingresa un título para buscar.")
-            return
-
-        self.lbl_busqueda.config(text=f"Buscando: {titulo}")
-        self.update() #? Fuerza a Tkinter a repintar el label antes de que la API lo bloquee
-        
-        datos_libros, self.docs = self.api_busqueda.buscar_titulo(titulo)
-
-        if datos_libros is None:
-            self.lbl_busqueda.config(text="No se encontraron libros o falló la conexión.")
-            self.actualizar_treeview([])
-        else:
-            self.lbl_busqueda.config(text=f"Resultados para: {titulo}")
-            self.actualizar_treeview(datos_libros)
-            
-    def seleccionar_libro_tree(self):
-        seleccion = self.tabla.selection()
-        if not seleccion:
-            return
-        id_libro = self.tabla.item(seleccion[0])["values"][0]
-        datos = self.api_busqueda.funcion_final(id_libro, self.docs)
-        self.cargar_datos(datos)
-        
         
     def guardar_cambios(self):
         titulo = self.txt_titulo.get()
@@ -184,9 +189,9 @@ class CrearLibro(BaseFrame):
         isbn = self.txt_isbn.get().strip()
 
         if titulo in ("", "Titulo del Libro") or autor in ("", "Autor"):
-            messagebox.showwarning(
-                "Datos incompletos",
-                "El título y el autor son obligatorios."
+            Messagebox.show_warning(
+                "El título y el autor son obligatorios.",
+                title="Datos incompletos"
             )
             return
 
@@ -198,9 +203,9 @@ class CrearLibro(BaseFrame):
                 raise ValueError
 
         except ValueError:
-            messagebox.showwarning(
-                "Datos inválidos",
-                "Ingresá un año válido y una cantidad entera no negativa."
+            Messagebox.show_warning(
+                "Ingresá un año válido y una cantidad entera no negativa.",
+                title="Datos inválidos"
             )
             return
 
@@ -220,19 +225,19 @@ class CrearLibro(BaseFrame):
                 mensaje = f"Libro creado correctamente con ID {nuevo_id}."
 
         except Exception as error:
-            messagebox.showerror(
-                "Error al guardar",
-                f"No se pudo guardar el libro: {error}"
+            Messagebox.show_error(
+                f"No se pudo guardar el libro: {error}",
+                title="Error al guardar"
             )
             return
 
-        messagebox.showinfo("Operación exitosa", mensaje)
+        Messagebox.show_info(mensaje, title="Operación exitosa")
                 # Regresar al listado
         from views.libros_views.gestion_libros_view import GestionLibros
         self.controller.show_frame(GestionLibros)
         
     def descartar(self):
-        messagebox.showinfo(title="Libro Descartado", message="Libro descartado exitosamente.\nVolviendo atrás...")
+        Messagebox.show_info(title="Libro Descartado", message="Libro descartado exitosamente.\nVolviendo atrás...")
         self.volver()
         
     def volver(self):

@@ -1,5 +1,6 @@
-import tkinter as tk
-from tkinter import messagebox
+import ttkbootstrap as tb
+from ttkbootstrap.constants import *
+from ttkbootstrap.dialogs import Messagebox
 from views.components.base_frame import BaseFrame
 from views.components.formulario_desplazable import FormularioDesplazable
 
@@ -25,7 +26,7 @@ class ModificarLibro(BaseFrame):
         )
         self.scroll_formulario.pack(fill="both", expand=True)
 
-        self.frame_central = tk.Frame(self.scroll_formulario.contenido, bd=1, relief="solid", padx=20, pady=20)
+        self.frame_central = tb.Labelframe(self.scroll_formulario.contenido, text="Datos del libro", padding=24, bootstyle=PRIMARY)
         self.frame_central.pack(fill="both", expand=True)
         self.frame_central.grid(row=1, column=0, sticky="nsew", padx=10, pady=(5, 10))
         
@@ -33,7 +34,7 @@ class ModificarLibro(BaseFrame):
         self.frame_central.rowconfigure(0, weight=1)
 
         #? Contenedor de cajas de texto
-        self.frame_formulario = tk.Frame(self.frame_central)
+        self.frame_formulario = tb.Frame(self.frame_central)
         self.frame_formulario.grid(row=0, column=0)
 
         #?Textos
@@ -50,39 +51,39 @@ class ModificarLibro(BaseFrame):
         self.cargar_datos()
 
         #? Frame Botones
-        self.frame_botones = tk.Frame(self.frame_central)
+        self.frame_botones = tb.Frame(self.frame_central)
         self.frame_botones.grid(row=1, column=0, sticky="ew", pady=(15, 0))
         
         self.frame_botones.columnconfigure((0,1,2), weight=1)
 
         #? Botones
-        self.btn_guardar = tk.Button(
-            self.frame_botones, text="Guardar Cambios", command=self.guardar_cambios
+        self.btn_guardar = tb.Button(
+            self.frame_botones, text="Guardar Cambios", command=self.guardar_cambios, bootstyle=SUCCESS
         )
-        self.btn_guardar.grid(row=0, column=0, padx=5, ipady=3, sticky="ew")
+        self.btn_guardar.grid(row=0, column=0, padx=6, ipady=8, sticky="ew")
 
-        self.btn_cancelar = tk.Button(
-            self.frame_botones, text="Cancelar y volver atras", command=self.descartar
+        self.btn_cancelar = tb.Button(
+            self.frame_botones, text="Cancelar y volver atras", command=self.descartar, bootstyle="secondary-outline"
         )
-        self.btn_cancelar.grid(row=0, column=2, padx=5, ipady=3, sticky="ew")
+        self.btn_cancelar.grid(row=0, column=2, padx=6, ipady=8, sticky="ew")
 
         if self.libro_datos:
-            self.btn_eliminar = tk.Button(
-                self.frame_botones, text="Dar de baja", command=self.eliminar_libro
+            self.btn_eliminar = tb.Button(
+                self.frame_botones, text="Dar de baja", command=self.eliminar_libro, bootstyle="danger-outline"
             )
-            self.btn_eliminar.grid(row=0, column=1, padx=5, ipady=3, sticky="ew")
+            self.btn_eliminar.grid(row=0, column=1, padx=6, ipady=8, sticky="ew")
             
     def crear_etiqueta(self, titulo, fila):
-        label = tk.Label(self.frame_formulario, text=titulo, justify="center", width=40)
-        label.grid(row=fila, column=0, pady=4, ipady=6)
+        label = tb.Label(self.frame_formulario, text=titulo, justify="center", width=40, bootstyle=PRIMARY)
+        label.grid(row=fila, column=0, pady=(8, 2), ipady=4)
         return label
         
     def crear_campo(self, placeholder, fila):
-        entry = tk.Entry(self.frame_formulario, justify="center", width=40)
+        entry = tb.Entry(self.frame_formulario, justify="center", width=40, bootstyle=PRIMARY)
         entry.insert(0, placeholder)
-        entry.grid(row=fila, column=0, pady=4, ipady=6)
+        entry.grid(row=fila, column=0, pady=(0, 8), ipady=7)
         
-        entry.bind("<FocusIn>", lambda e, p=placeholder: entry.delete(0, tk.END) if entry.get() == p else None)
+        entry.bind("<FocusIn>", lambda e, p=placeholder: entry.delete(0, "end") if entry.get() == p else None)
         return entry
 
     def cargar_datos(self):
@@ -95,7 +96,7 @@ class ModificarLibro(BaseFrame):
 
     def set_entry(self, entry, valor):
         if valor:
-            entry.delete(0, tk.END)
+            entry.delete(0, "end")
             entry.insert(0, valor)
 
     def guardar_cambios(self):
@@ -107,9 +108,9 @@ class ModificarLibro(BaseFrame):
 
         # Validar campos obligatorios
         if titulo in ("", "Titulo del Libro") or autor in ("", "Autor"):
-            messagebox.showwarning(
-                "Datos incompletos",
-                "El título y el autor son obligatorios."
+            Messagebox.show_warning(
+                "El título y el autor son obligatorios.",
+                title="Datos incompletos"
             )
             return
 
@@ -122,9 +123,9 @@ class ModificarLibro(BaseFrame):
                 raise ValueError
 
         except ValueError:
-            messagebox.showwarning(
-                "Datos inválidos",
-                "Ingresá un año válido y una cantidad entera no negativa."
+            Messagebox.show_warning(
+                "Ingresá un año válido y una cantidad entera no negativa.",
+                title="Datos inválidos"
             )
             return
 
@@ -144,14 +145,14 @@ class ModificarLibro(BaseFrame):
                 mensaje = f"Libro creado correctamente con ID {nuevo_id}."
 
         except Exception as error:
-            messagebox.showerror(
-                "Error al guardar",
-                f"No se pudo guardar el libro: {error}"
+            Messagebox.show_error(
+                f"No se pudo guardar el libro: {error}",
+                title="Error al guardar"
             )
             return
 
         # Confirmar al usuario
-        messagebox.showinfo("Operación exitosa", mensaje)
+        Messagebox.show_info(mensaje, title="Operación exitosa")
 
         # Regresar al listado
         from views.libros_views.gestion_libros_view import GestionLibros
@@ -160,7 +161,7 @@ class ModificarLibro(BaseFrame):
 
     def descartar(self):
         from views.libros_views.gestion_libros_view import GestionLibros
-        messagebox.showinfo(title="Libro Descartad", message="Libro Descartado exitosamente.\n Volviendo atras...")
+        Messagebox.show_info(title="Libro Descartad", message="Libro Descartado exitosamente.\n Volviendo atras...")
         self.controller.show_frame(GestionLibros)
 
     
@@ -168,10 +169,10 @@ class ModificarLibro(BaseFrame):
         if not self.libro_datos:
             return
 
-        confirmar = messagebox.askyesno(
-            "Confirmar baja",
-            "¿Deseás dar de baja este libro?"
-        )
+        confirmar = Messagebox.show_question(
+            "¿Deseás dar de baja este libro?",
+            title="Confirmar baja"
+        ) == "Yes"
 
         if not confirmar:
             return
@@ -182,22 +183,22 @@ class ModificarLibro(BaseFrame):
             )
 
             if not resultado:
-                messagebox.showwarning(
-                    "Atención",
-                    "El libro no existe o ya fue dado de baja."
+                Messagebox.show_warning(
+                    "El libro no existe o ya fue dado de baja.",
+                    title="Atención"
                 )
                 return
 
         except Exception as error:
-            messagebox.showerror(
-                "Error",
-                f"No se pudo dar de baja el libro: {error}"
+            Messagebox.show_error(
+                f"No se pudo dar de baja el libro: {error}",
+                title="Error"
             )
             return
 
-        messagebox.showinfo(
-            "Operación exitosa",
-            "El libro fue dado de baja correctamente."
+        Messagebox.show_info(
+            "El libro fue dado de baja correctamente.",
+            title="Operación exitosa"
         )
 
         from views.libros_views.gestion_libros_view import GestionLibros
