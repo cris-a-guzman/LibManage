@@ -11,7 +11,7 @@ Sistema de gestión de biblioteca (libros, socios y préstamos) desarrollado par
 4. [Problemas comunes](#4-problemas-comunes)
 5. [Estructura del proyecto](#5-estructura-del-proyecto)
 6. [Más documentación](#6-más-documentación)
-7. [Manual de usuario](./docs/Manual de usuario - LibManage-1.pdf)
+7. [Manual de usuario](./docs/Manual%20de%20usuario%20-%20LibManage-1.pdf)
 
 ---
 
