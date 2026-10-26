@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 from views.components.base_frame import BaseFrame
 from datetime import date, datetime
+from mysql.connector import Error, IntegrityError
 
 class ModificarSocio(BaseFrame):
     def __init__(self, parent, controller, conexion, socio_datos=None):
@@ -47,8 +48,12 @@ class ModificarSocio(BaseFrame):
         self.lbl_telefono = self.crear_etiqueta("Telefono",3)
         self.txt_telefono = self.crear_campo(resultado['telefono'], 3)
         self.lbl_fecha_asociacion = self.crear_etiqueta("Fecha de asociacion",4)
-        self.txt_fecha_asociacion = self.crear_campo(resultado['fecha_asociacion'], 4)      
+        fecha = resultado["fecha_asociacion"]
 
+        if isinstance(fecha, (date, datetime)):
+            fecha = fecha.strftime("%d/%m/%Y")
+
+        self.txt_fecha_asociacion = self.crear_campo(fecha, 4)
         self.frame_botones = tk.Frame(self.frame_central)
         self.frame_botones.grid(row=1, column=0, sticky="ew", pady=(15, 0))
         
@@ -77,12 +82,14 @@ class ModificarSocio(BaseFrame):
         label.grid(row=fila, column=0, pady=4, ipady=6)
         return label
     
-    def crear_campo(self, placeholder, fila):
-        entry = tk.Entry(self.frame_formulario, justify="center", width=40)
-        entry.insert(0, placeholder)
+    def crear_campo(self, valor, fila):
+        entry = tk.Entry(
+            self.frame_formulario,
+            justify="center",
+            width=40
+        )
+        entry.insert(0, valor)
         entry.grid(row=fila, column=1, pady=8, ipady=6)
-        
-        entry.bind("<FocusIn>", lambda e, p=placeholder: entry.delete(0, tk.END) if entry.get() == p else None)
         return entry
 
     def cargar_datos(self, id_socio):
@@ -97,61 +104,118 @@ class ModificarSocio(BaseFrame):
 
     def guardar_cambios(self):
         from views.socio_views.gestion_socios_view import GestionSocios
-        placeholders = ["Nombre", "Apellido", "DNI", "Telefono", "Fecha de Asociacion"]
-        
+
+        # 1. Obtener los valores del formulario
         datos_socio = {
             "nombre": self.txt_nombre.get().strip(),
             "apellido": self.txt_apellido.get().strip(),
             "telefono": self.txt_telefono.get().strip(),
-            "dni":self.txt_dni.get().strip(),
-            "fecha_asociacion":self.txt_fecha_asociacion.get().strip()
+            "dni": self.txt_dni.get().strip(),
+            "fecha_asociacion": self.txt_fecha_asociacion.get().strip()
         }
-        for i in datos_socio.values():
-            if i in placeholders:
-                messagebox.showwarning(
-                                "Datos incompletos",
-                                "Los datos del socio son obligatorios, intentelo de nuevo."
-                            )
-                return
 
-        if not datos_socio['dni'].isdigit():
+        # 2. Verificar que no existan campos vacíos
+        if any(not valor for valor in datos_socio.values()):
             messagebox.showwarning(
-                "D.N.I invalido",
-                "El DNI ingresado no corresponde a un DNI valido, intentelo de nuevo"
+                "Datos incompletos",
+                "Todos los campos son obligatorios."
             )
             return
-        
-        if not datos_socio['telefono'].isdigit():
+
+        # 3. Validar DNI
+        if not datos_socio["dni"].isdigit():
             messagebox.showwarning(
-                    "Telefono invalido",
-                    "El telefono ingresado no corresponde a un telefono valido, intentelo de nuevo agregando solo los numeros (el sistema no acepta caracteres no numericos)"
-                )
+                "DNI inválido",
+                "El DNI debe contener solamente números."
+            )
             return
-        
+
+        # 4. Validar teléfono
+        if not datos_socio["telefono"].isdigit():
+            messagebox.showwarning(
+                "Teléfono inválido",
+                "El teléfono debe contener solamente números."
+            )
+            return
+
+        # 5. Validar y convertir la fecha
         try:
-            fecha_asociacion = datetime.strptime(
-                self.txt_fecha_asociacion.get().strip(),
+            datos_socio["fecha_asociacion"] = datetime.strptime(
+                datos_socio["fecha_asociacion"],
                 "%d/%m/%Y"
             ).date()
-
-            datos_socio['fecha_asociacion'] = fecha_asociacion
 
         except ValueError:
             messagebox.showwarning(
                 "Fecha inválida",
-                "Ocurrio un problema ingresando la fecha del socio, intentelo de nuevo"
+                "La fecha debe tener el formato DD/MM/AAAA."
             )
             return
-        socios_activos = self.ApiSocios.obtener_socios_dni()
-        if datos_socio['dni'] in socios_activos:
-            messagebox.showwarning(
-                    "DNI ya registrado",
-                    f"El socio{datos_socio['dni']} ya se encuentra en la base de datos"
+
+        # 6. Validar DNI y actualizar el socio
+        try:
+            # Verificar que el DNI no pertenezca a otro socio
+            if self.ApiSocios.dni_asignado_a_otro(
+                datos_socio["dni"],
+                self.socio_id
+            ):
+                messagebox.showwarning(
+                    "DNI duplicado",
+                    "El DNI ingresado pertenece a otro socio."
                 )
-            return
-        resultado = self.ApiSocios.registrar_socio(datos_socio)
-        messagebox.showinfo(title="Socio Registrado", message=f"Socio registrado exitosamente.{resultado}")
-        self.controller.show_frame(GestionSocios)
+                return
+
+            # Actualizar el registro existente
+            resultado = self.ApiSocios.modificar_socio(
+                self.socio_id,
+                datos_socio
+            )
+
+            if resultado > 0:
+                messagebox.showinfo(
+                    "Socio modificado",
+                    "Los datos del socio se actualizaron correctamente."
+                )
+                self.controller.show_frame(GestionSocios)
+
+            else:
+                # Un UPDATE sin cambios también devuelve rowcount = 0
+                socio = self.ApiSocios.obtener_socio_por_id(
+                    self.socio_id
+                )
+
+                if socio is None:
+                    messagebox.showerror(
+                        "Error",
+                        "No se encontró el socio que intentás modificar."
+                    )
+                else:
+                    messagebox.showinfo(
+                        "Sin cambios",
+                        "No se detectaron cambios en los datos del socio."
+                    )
+                    self.controller.show_frame(GestionSocios)
+
+        # 7. Manejar errores por restricciones de MySQL
+        except IntegrityError as error:
+            if error.errno == 1062:
+                messagebox.showwarning(
+                    "DNI duplicado",
+                    "El DNI ingresado ya está registrado."
+                )
+            else:
+                messagebox.showerror(
+                    "Error de integridad",
+                    "No se pudieron guardar los cambios."
+                )
+
+        # 8. Manejar otros errores de base de datos
+        except Error as error:
+            print(f"Error al modificar socio: {error}")
+            messagebox.showerror(
+                "Error de base de datos",
+                "Ocurrió un error al actualizar el socio."
+            )
 
     def descartar(self):
         from views.socio_views.gestion_socios_view import GestionSocios

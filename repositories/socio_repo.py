@@ -98,4 +98,42 @@ class SociosRepo(BaseRepository):
         """
         resultado = self._ejecutar_consulta(consulta, (id_socio,), fetchone=True)
         return resultado['total'] > 0 if resultado else False
-        
+
+    def modificar_socio(self, id_socio, datos):
+        consulta = """
+            UPDATE socio
+            SET dni = %s,
+                nombre = %s,
+                apellido = %s,
+                telefono = %s,
+                fecha_asociacion = %s
+            WHERE id_socio = %s
+            AND fecha_baja IS NULL
+        """
+
+        parametros = (
+            datos["dni"],
+            datos["nombre"],
+            datos["apellido"],
+            datos["telefono"],
+            datos["fecha_asociacion"],
+            id_socio
+        )
+
+        return self._ejecutar_escritura(
+            consulta, parametros
+        )["rowcount"]
+
+    
+    def dni_asignado_a_otro(self, dni, id_socio):
+        consulta = """
+            SELECT 1 FROM socio
+            WHERE dni = %s
+            AND id_socio <> %s
+            LIMIT 1
+        """
+
+        resultado = self._ejecutar_consulta(
+            consulta, (dni, id_socio), fetchone=True
+        )
+        return resultado is not None
