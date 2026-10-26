@@ -22,10 +22,7 @@ class GestionLibros(BaseFrame):
 
         #? Boton Ordenar
         self.crear_boton_ordenar(self.ordenar)
-
-        #? Boton Filtrar
-        self.crear_boton_filtrar(self.filtrar)
-
+  
         #? --- Tabla de Libros
         self.frame_libros = tk.Frame(self.frame_central)
         self.frame_libros.grid(row=2, column=0, columnspan=2, sticky="nsew", pady=10)
@@ -66,45 +63,11 @@ class GestionLibros(BaseFrame):
 
         self.actualizar_tabla(self.libros_datos)
         
-    def actualizar_tabla(self, lista_libros):
-        for item in self.tabla.get_children():
-            self.tabla.delete(item)
-
-        for libro in lista_libros:
-            self.tabla.insert(
-                "",
-                "end",
-                values=(
-                    libro["id_libro"],
-                    libro["isbn"],
-                    libro["titulo"],
-                    libro["autor"],
-                    libro["anio"],
-                    libro["cantidad_total"],
-                )
-            )
-
     def buscar(self):
-        texto = self.busqueda.get().strip().lower()
-        if not texto or texto == "barra de busqueda":
-            self.actualizar_tabla(self.libros_datos)
-            return
-
-        resultados = [
-            l for l in self.libros_datos
-            if texto in l["titulo"].lower()
-            or texto in l["autor"].lower()
-            or texto in str(l["isbn"] or "").lower()
-        ]
-        self.actualizar_tabla(resultados)
+        self.buscar_por_columnas(self.libros_datos, ("titulo", "autor", "isbn"))
 
     def ordenar(self):
-        libros_ordenados = sorted(self.libros_datos, key=lambda x: x["titulo"])
-        self.actualizar_tabla(libros_ordenados)
-
-    def filtrar(self):
-        self.busqueda.delete(0, tk.END)
-        self.actualizar_tabla(self.libros_datos)
+        self.ordenar_por(self.libros_datos, "titulo")
         
     def crear_libro(self):
         from views.libros_views.crear_libro_view import CrearLibro

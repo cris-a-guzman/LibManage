@@ -48,15 +48,16 @@ class BaseFrame(tk.Frame):
         self.frame_central.grid(row=1, column=0, sticky="nsew", padx=10, pady=(5, 10))
         return self.frame_central
     
-    def crear_barra_busqueda(self, placeholder , funcion_buscar):
-
+    def crear_barra_busqueda(self, placeholder, funcion_buscar):
+        self.placeholder_busqueda = placeholder
         self.busqueda = tk.Entry(self.frame_central, justify="center")
         self.busqueda.insert(0, placeholder)
         self.busqueda.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 15), ipady=5)
-        
+
         self.busqueda.bind("<FocusIn>", lambda e: self.busqueda.delete(0, tk.END) if self.busqueda.get() == placeholder else None)
         self.busqueda.bind("<Return>", lambda e: funcion_buscar())
-        #? Agregar funcion para que cuando este vacio se reinicie el renderizado
+        # Si la barra queda vacía, se vuelve a mostrar la lista completa
+        self.busqueda.bind("<KeyRelease>", lambda e: funcion_buscar() if not self.busqueda.get().strip() else None)
         
     def crear_boton_ordenar(self, funcion_ordenar):
         self.btn_ordenar = tk.Button(self.frame_central, text="Ordenar", command=funcion_ordenar)
@@ -137,3 +138,40 @@ class BaseFrame(tk.Frame):
                 titulo,
                 mensaje
                     )
+    def actualizar_tabla(self, filas):
+        """Limpia self.tabla y la rellena. Acepta filas como diccionarios o tuplas."""
+        columnas = self.tabla["columns"]
+        for item in self.tabla.get_children():
+            self.tabla.delete(item)
+        for fila in filas:
+            if isinstance(fila, dict):
+                valores = tuple(fila[c] for c in columnas)
+            else:
+                valores = tuple(fila)
+            self.tabla.insert("", "end", values=valores)
+
+    def buscar_por_columnas(self, datos, campos):
+        """Muestra solo las filas de `datos` donde el texto aparece en alguno de `campos`.
+        `campos` son claves (si las filas son diccionarios) o índices (si son tuplas)."""
+        texto = self.busqueda.get().strip().lower()
+        if not texto or texto == self.placeholder_busqueda.lower():
+            self.actualizar_tabla(datos)
+            return
+
+        resultados = [
+            fila for fila in datos
+            if any(
+                texto in str(fila[campo] if fila[campo] is not None else "").lower()
+                for campo in campos
+            )
+        ]
+        self.actualizar_tabla(resultados)
+
+    def ordenar_por(self, datos, campo):
+        """Muestra `datos` ordenados por `campo` (clave o índice)."""
+        self.actualizar_tabla(sorted(datos, key=lambda f: str(f[campo]).lower()))
+
+    def limpiar_busqueda(self, datos):
+        """Vacía la barra de búsqueda y muestra todos los datos."""
+        self.busqueda.delete(0, tk.END)
+        self.actualizar_tabla(datos)

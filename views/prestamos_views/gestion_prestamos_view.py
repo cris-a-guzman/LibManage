@@ -91,8 +91,7 @@ class GestionPrestamos(BaseFrame):
         self.solo_vencidos = nuevo_estado
         self.prestamos_datos = datos
 
-        self.busqueda.delete(0, tk.END)
-        self.actualizar_tabla(self.prestamos_datos)
+        self.limpiar_busqueda(self.prestamos_datos)
 
         if self.solo_vencidos:
             self.btn_filtros.config(text="Mostrar todos")
@@ -100,14 +99,14 @@ class GestionPrestamos(BaseFrame):
             self.btn_filtros.config(text="Solo vencidos")
 
     def actualizar_tabla(self, lista_prestamos):
-        """Limpia y vuelve a cargar los datos en la tabla."""
-        for item in self.tabla.get_children():
-            self.tabla.delete(item)
-        for prestamo in lista_prestamos:
-            self.tabla.insert("", "end", values=prestamo)
-
+        super().actualizar_tabla(lista_prestamos)
         self.actualizar_boton_devolver()
 
+    def buscar(self, event=None):
+        self.buscar_por_columnas(self.prestamos_datos, (1, 2))
+
+    def ordenar(self):
+        self.ordenar_por(self.prestamos_datos, 3)
 
     def actualizar_boton_devolver(self, event=None):
         seleccion = self.tabla.selection()
@@ -124,30 +123,7 @@ class GestionPrestamos(BaseFrame):
         else:
             self.btn_devolver.config(state="disabled")
 
-    def buscar(self, event=None):
-        """Filtra la lista de prestamos según lo ingresado."""
-        texto = self.busqueda.get().strip().lower()
-        if not texto:
-            self.actualizar_tabla(self.prestamos_datos)
-            return
 
-        resultados = [
-            p for p in self.prestamos_datos
-            if texto in p[1].lower() or texto in p[2].lower()
-        ]
-        self.actualizar_tabla(resultados)
-
-    def limpiar_busqueda(self):
-        """Restablece la búsqueda y muestra todos los datos."""
-        self.busqueda.delete(0, tk.END)
-        self.actualizar_tabla(self.prestamos_datos)
-
-    def ordenar(self):
-        """Ordena los prestamos por fecha de vencimiento."""
-        prestamos_ordenados = sorted(self.prestamos_datos, key=lambda x: x[3])
-        self.actualizar_tabla(prestamos_ordenados)
-
-    
     def marcar_devuelto(self):
         seleccion = self.tabla.selection()
 
